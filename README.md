@@ -2,13 +2,14 @@
 ## Overview
 Visualize point density by using colormap "Viridis".
 
-![img](resources/LR10.bmp)
+## Image
+![img1](resources/hachimanyama.bmp)
+![img2](resources/funehoko.bmp)
 
 ## Usage
 `./vpd [input_file] [output_file]`
 
-### 0:RadiusSearch
-***
+### RadiusSearch
 ```
 Select search type ( 0:RadiusSearch or 1:NeatestKSearch ) : 0
 > RadiusSearch
@@ -22,11 +23,9 @@ time : 3237.54
 Max point density : 19175
 Min point density : 1
 ```
-***
 
 
-### 1:NearestKSearch
-***
+### NearestKSearch
 ```
 Select search type ( 0:RadiusSearch or 1:NeatestKSearch ) : 1
 > NearestKSearch
@@ -40,4 +39,3 @@ time : 881.543
 Max point density : 0.30644
 Min point density : 0.016313
 ```
-***

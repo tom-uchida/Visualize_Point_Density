@@ -87,7 +87,17 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
     std::cout << "Now searching ..." << std::endl;
     
     // Search nearest points by using kdTree
+    int display_interval = 1000000;
     for ( size_t i = 0; i < m_number_of_points; i++ ) {
+        // Processing ratio
+        double processing_ratio = 100.0 * (double)i / (double)m_number_of_points;
+
+        // Display messages
+        if ( !(i % display_interval) && i > 0 ) { 
+            std::cout << "*** Num. of processed points : " << i;
+            std::cout << " [" << processing_ratio << " %]" << std::endl;
+        }
+
         searchPoint.x = _points[i].x;
         searchPoint.y = _points[i].y;
         searchPoint.z = _points[i].z;
@@ -131,7 +141,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
     // End time clock
     clock_t end = clock();
-    std::cout << "time : " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
+    std::cout << "Done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
 
     // Calc max and min point density
     m_max_point_density = *std::max_element(m_point_densities.begin(), m_point_densities.end());

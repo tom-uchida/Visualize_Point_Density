@@ -5,3 +5,4 @@ Makefile.kvs
 *.spbr
 *.txt
 SPBR_DATA/
+.vscode
