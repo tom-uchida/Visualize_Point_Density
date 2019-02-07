@@ -1,0 +1,7 @@
+vpd
+Makefile
+Makefile.kvs
+*.o
+*.spbr
+*.txt
+SPBR_DATA/
