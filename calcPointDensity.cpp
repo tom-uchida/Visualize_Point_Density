@@ -22,7 +22,7 @@ void calcPointDensity::setSearchRadius( double _divide, kvs::Vector3f _bbmin, kv
     kvs::Vector3f bb    = _bbmax - _bbmin;  // Diagonal vector
     double b_leng       = bb.length();      // Diagonal length
     m_searchRadius      = b_leng / _divide; // Diagonal length / divide
-    std::cout << "> m_searchRadius" << m_searchRadius << std::endl;
+    std::cout << "> m_searchRadius : " << m_searchRadius << std::endl;
 }
 
 void calcPointDensity::setNearestK( int _k) {
@@ -84,6 +84,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
     // Start time count
     std::cout << "\nClock start" << std::endl;
     clock_t start = clock();
+    std::cout << "Now searching ..." << std::endl;
     
     // Search nearest points by using kdTree
     for ( size_t i = 0; i < m_number_of_points; i++ ) {
@@ -130,7 +131,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
     // End time clock
     clock_t end = clock();
-    std::cout << "time : " <<(double)(end - start) / CLOCKS_PER_SEC << std::endl;
+    std::cout << "time : " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
 
     // Calc max and min point density
     m_max_point_density = *std::max_element(m_point_densities.begin(), m_point_densities.end());

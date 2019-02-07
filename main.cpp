@@ -67,7 +67,7 @@ int main( int argc, char** argv ) {
         std::cout << "\nSet divide : ";
         std::cin >> divide;
         cpd->setSearchRadius( divide, ply->minObjectCoord(), ply->maxObjectCoord() );
-        std::cout << "> " << divide << std::endl;
+        //std::cout << "> " << divide << std::endl;
 
     } else if ( search_type == 1 ) {
         cpd->setSearchType( calcPointDensity::NearestKSearch );
@@ -89,8 +89,6 @@ int main( int argc, char** argv ) {
     cpd->calc( ply );
     cpd->normalizePointDensities();
     const std::vector<float> normalized_point_densities = cpd->getPointDensities();
-    std::cout << "max : " << *std::max_element(normalized_point_densities.begin(), normalized_point_densities.end());
-    std::cout << "min : " << *std::min_element(normalized_point_densities.begin(), normalized_point_densities.end()) << std::endl;
     // End Calculate Point Density
 
     // Apply Color
