@@ -38,6 +38,7 @@ void writeSPBR( kvs::PolygonObject *_ply,
     }
 
     // Write to ouput file
+    std::cout << "\nNow writing..." << std::endl;
     for ( int i = 0; i < num; i++ ) {
         // coords                                               
         float x = coords[3*i];
