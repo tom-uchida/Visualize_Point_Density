@@ -26,15 +26,16 @@ int main( int argc, char** argv ) {
     strcpy( outSPBRfile, OUT_FILE ); 
 
     // Message                                                                     
-    std::cout << "=================================" << std::endl;
-    std::cout << "     Visualize Point Density " << std::endl;
-    std::cout << "=================================" << std::endl;
+    std::cout << "================================="    << std::endl;
+    std::cout << "     Visualize Point Density "        << std::endl;
+    std::cout << "         Tomomasa Uchida "            << std::endl;
+    std::cout << "           2019/10/28 "               << std::endl;
+    std::cout << "================================="    << std::endl;
     std::cout << std::endl;
 
     if ( argc != 3 ) {
         std::cerr << "USAGE: ./vpd input.spbr output.spbr" << std::endl;
         exit(1);
-
     } else {
         strcpy( outSPBRfile, argv[2] );
     }
@@ -42,7 +43,7 @@ int main( int argc, char** argv ) {
     // Import "point cloud data（.ply, argv[1]）" that user selected
     ImportPointClouds *ply = new ImportPointClouds( argv[1] );
     ply->updateMinMaxCoords();
-    std::cout << "PLY Min, Max Coords:" << std::endl;
+    std::cout << "\nPLY Min, Max Coords:" << std::endl;
     std::cout << "Min : " << ply->minObjectCoord() << std::endl;
     std::cout << "Max : " << ply->maxObjectCoord() << std::endl;
     std::cout << "Number of points : " << ply->numberOfVertices() << std::endl;
@@ -54,7 +55,7 @@ int main( int argc, char** argv ) {
     //============================//
     int search_type = -1;
     std::cout << "\nSelect search type ";
-    std::cout << "( 0:RadiusSearch or 1:NeatestKSearch ) : ";
+    std::cout << "( 0: RadiusSearch or 1: NearestKSearch ) : ";
     std::cin >> search_type;
     if ( search_type == 0 ) {
         cpd->setSearchType( calcPointDensity::RadiusSearch );
@@ -64,7 +65,8 @@ int main( int argc, char** argv ) {
         // STEP 2: Set radius //
         //====================//
         int divide = 0;
-        std::cout << "\nSet divide : ";
+        std::cout << "\nSet divide value ";
+        std::cout << "( search_radius = diagonal_length / divide_value ) : ";
         std::cin >> divide;
         cpd->setSearchRadius( divide, ply->minObjectCoord(), ply->maxObjectCoord() );
         //std::cout << "> " << divide << std::endl;

@@ -4,10 +4,16 @@
 #include <pcl/point_cloud.h>
 #include <pcl/kdtree/kdtree_flann.h> 
 #include <time.h>
+#include <fstream>
+#include <cstdlib>
+
+#define HISTOGRAM_MODE
 
 calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
-    m_max_point_density( 0.0f ),
-    m_min_point_density( 1e05 )
+    m_max_point_num( -1 ),
+    m_min_point_num( 1e06 ),
+    m_max_avg_dist( -1.0f ),
+    m_min_avg_dist( 1e05 )
 {}
 
 void calcPointDensity::setSearchType( SearchType _type) {
@@ -18,11 +24,12 @@ void calcPointDensity::setSearchRadius( double _distance ) {
     m_searchRadius = _distance;
 }
 
-void calcPointDensity::setSearchRadius( double _divide, kvs::Vector3f _bbmin, kvs::Vector3f _bbmax  ) {
-    kvs::Vector3f bb    = _bbmax - _bbmin;  // Diagonal vector
-    double b_leng       = bb.length();      // Diagonal length
-    m_searchRadius      = b_leng / _divide; // Diagonal length / divide
-    std::cout << "> m_searchRadius : " << m_searchRadius << std::endl;
+void calcPointDensity::setSearchRadius( double _divide_value, kvs::Vector3f _bbmin, kvs::Vector3f _bbmax  ) {
+    kvs::Vector3f bb        = _bbmax - _bbmin;  // Diagonal vector
+    double diagonal_length  = bb.length();      // Diagonal length
+    m_searchRadius          = diagonal_length / _divide_value; // Diagonal length / divide
+    std::cout << "> search_radius : " << m_searchRadius;
+    std::cout << " (= " << diagonal_length << " / " << _divide_value << ")" << std::endl;
 }
 
 void calcPointDensity::setNearestK( int _k) {
@@ -84,10 +91,10 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
     // Start time count
     std::cout << "\nClock start" << std::endl;
     clock_t start = clock();
-    std::cout << "Now searching ..." << std::endl;
+    std::cout << "Now searching and calculating ..." << std::endl;
     
     // Search nearest points by using kdTree
-    int display_interval = 1000000;
+    int display_interval = 1e06;
     for ( size_t i = 0; i < m_number_of_points; i++ ) {
         // Processing ratio
         double processing_ratio = 100.0 * (double)i / (double)m_number_of_points;
@@ -104,6 +111,8 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
             
         // Search nearest points
         // http://pointclouds.org/documentation/tutorials/kdtree_search.php#kdtree-search
+
+        // RadiusSearch
         int num_of_neighborhood=0;
         if ( m_type == RadiusSearch ) {
             num_of_neighborhood = kdtree.radiusSearch ( searchPoint, 
@@ -111,8 +120,11 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
                                                         pointIndex, 
                                                         pointSquaredDistance );
 
+            // Count the number of points in the search sphere
             m_point_densities.push_back(num_of_neighborhood);
+        // end RadiusSearch
 
+        // NearestKSearch
         } else if ( m_type == NearestKSearch ) {
             num_of_neighborhood = kdtree.nearestKSearch (   searchPoint,
                                                             m_nearestK,
@@ -120,7 +132,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
                                                             pointSquaredDistance );
 
             // Calc point density
-            double Distance_sum = 0.0;
+            double distance_sum = 0.0f;
             for ( int j = 0; j < m_nearestK; j++ ) {
                 double distanceXYZ[3];
                 distanceXYZ[0] = _points[i].x - _points[ pointIndex[j] ].x;
@@ -130,29 +142,56 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
                 double distance = sqrt( distanceXYZ[0]*distanceXYZ[0] + 
                                         distanceXYZ[1]*distanceXYZ[1] + 
                                         distanceXYZ[2]*distanceXYZ[2] );
-                Distance_sum += distance;
+                distance_sum += distance;
             }
-            double Distance_ave = Distance_sum / (num_of_neighborhood - 1.0);
+            double distance_avg = distance_sum / (num_of_neighborhood - 1.0);
 
-            m_point_densities.push_back(Distance_ave);
-        }
-
-    }
+            m_point_densities.push_back(distance_avg);
+        } // end if
+        // end NearestKSearch
+    } // end for
 
     // End time clock
     clock_t end = clock();
     std::cout << "Done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
 
-    // Calc max and min point density
-    m_max_point_density = *std::max_element(m_point_densities.begin(), m_point_densities.end());
-    m_min_point_density = *std::min_element(m_point_densities.begin(), m_point_densities.end());
-    std::cout << "\nMax point density";
-    std::cout << " : " << m_max_point_density    << std::endl;
-    std::cout << "Min point density";
-    std::cout << " : " << m_min_point_density    << std::endl;
+    if ( m_type == RadiusSearch ) {
+        // Show result
+        m_max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());
+        m_min_point_num = *std::min_element(m_point_densities.begin(), m_point_densities.end());
+        std::cout << "\nMax num. of points";
+        std::cout << " : " << m_max_point_num    << std::endl;
+        std::cout << "Min num. of points";
+        std::cout << " : " << m_min_point_num    << std::endl;
+
+    } else if ( m_type == NearestKSearch ) {
+         // Show result
+        m_max_avg_dist = *std::max_element(m_point_densities.begin(), m_point_densities.end());
+        m_min_avg_dist = *std::min_element(m_point_densities.begin(), m_point_densities.end());
+        std::cout << "\nMax avg. distance";
+        std::cout << " : " << m_max_avg_dist    << std::endl;
+        std::cout << "Min avg. distance";
+        std::cout << " : " << m_min_avg_dist    << std::endl;
+    } // end if
 } // End exec( std::vector<pcl::PointXYZ> &_points )
 
 void calcPointDensity::normalizePointDensities() {
-    for (int i = 0; i < m_point_densities.size(); i++)
-        m_point_densities[i] = m_point_densities[i] / m_max_point_density;
+    std::ofstream fout_before( "SPBR_DATA/norm_before.csv" );
+    std::ofstream fout_after( "SPBR_DATA/norm_after.csv" );
+
+    for (int i = 0; i < m_point_densities.size(); i++) {
+#ifdef HISTOGRAM_MODE
+        fout_before << m_point_densities[i] << std::endl;
+#endif
+        // Normalize
+        if ( m_type == RadiusSearch ) {
+            m_point_densities[i] = m_point_densities[i] / m_max_point_num;
+        } else if ( m_type == NearestKSearch ) {
+            m_point_densities[i] = m_point_densities[i] / m_max_avg_dist;
+        }
+
+#ifdef HISTOGRAM_MODE
+        fout_after << m_point_densities[i] << std::endl;
+#endif
+    }
 } // End normalizePointDencities()
