@@ -7,7 +7,9 @@
 #include <fstream>
 #include <cstdlib>
 
-#define HISTOGRAM_MODE
+#include <numeric>
+
+// #define HISTOGRAM_MODE
 
 calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
     m_max_point_num( -1 ),
@@ -195,3 +197,35 @@ void calcPointDensity::normalizePointDensities() {
 #endif
     }
 } // End normalizePointDencities()
+
+void calcPointDensity::adjustPointDensities() {
+    double avg = 0.0, var = 0.0, std = 0.0;
+    for (const double &i : m_point_densities){
+        avg += i;
+        var += i * i;
+    }
+    avg /= m_point_densities.size();
+    var = var/m_point_densities.size() - avg*avg;
+    std = sqrt(var);
+    std::cout << "\nAverage:  " << avg << std::endl;
+    // std::cout << "Variance: " << var << std::endl;
+    std::cout << "SD:       " << std << std::endl;
+
+    double sigma_2 = avg+2*std;
+    double sigma_3 = avg+3*std;
+    // for (int i = 0; i < m_point_densities.size(); i++) {
+    for (const double &i : m_point_densities){
+        // Remove outlier
+        if (i >= sigma_2)
+            m_point_densities[i] = sigma_2;
+    }
+
+    if ( m_type == RadiusSearch ) {
+        // m_max_point_num = sigma_3;
+        m_max_point_num = sigma_2;
+        std::cout << "\nNew max num. of points";
+        std::cout << " : " << m_max_point_num    << std::endl;
+    } else if ( m_type == NearestKSearch ) {
+        m_max_avg_dist = sigma_3;
+    }
+} // End adjustPointDencities()

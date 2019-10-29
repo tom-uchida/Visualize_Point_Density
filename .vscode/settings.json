@@ -73,6 +73,7 @@
         "hashtable": "cpp",
         "random": "cpp",
         "memory_resource": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "numeric": "cpp"
     }
 }

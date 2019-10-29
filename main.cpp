@@ -89,8 +89,9 @@ int main( int argc, char** argv ) {
     }
 
     cpd->calc( ply );
+    cpd->adjustPointDensities();
     cpd->normalizePointDensities();
-    const std::vector<float> normalized_point_densities = cpd->getPointDensities();
+    const std::vector<double> normalized_point_densities = cpd->getPointDensities();
     // End Calculate Point Density
 
     // Apply Color
