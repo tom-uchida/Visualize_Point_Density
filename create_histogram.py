@@ -29,13 +29,13 @@ point_densities = pd.read_csv( args[1], header=None )
 point_densities = point_densities.values
 # print(point_densities[:10])
 
-# Remove outlier
+# To remove outlier
 mean    = np.mean(point_densities)
 median  = np.median(point_densities)
 # var     = np.var(point_densities)
 std     = np.std(point_densities)
 print("mean     :", mean)
-print("median   :", median)
+# print("median   :", median)
 # print("var      :", var)
 print("std      :", std)
 
@@ -46,6 +46,22 @@ print("1sigma   :", sigma_1)
 print("2sigma   :", sigma_2)
 print("3sigma   :", sigma_3)
 
+# Standardize after removing outliers
+b_outlier = point_densities > sigma_1
+point_densities = np.where(b_outlier, sigma_1, point_densities)
+mean = np.mean(point_densities)
+std  = np.std(point_densities)
+print("\nmean     :", mean)
+print("std      :", std)
+
+# Standardization
+z = (point_densities - mean) / std
+# print("z        :", z)
+mean_z  = np.mean(z)
+var_z   = np.var(z)
+print("\nmean_z   :", mean_z)
+print("var_z    :", var_z)
+
 
 
 # Create figure
@@ -54,14 +70,15 @@ gs  = gridspec.GridSpec(1,1)
 
 # Histogram(Low image)
 ax = fig.add_subplot(gs[0,0])
-ax.hist(point_densities, bins=1000, color='black', alpha=1.0)
-# ax.set_title("")
+# ax.hist(point_densities, bins=1000, color='black', alpha=1.0)
+ax.hist(z, bins=100, color='black', alpha=1.0)
+ax.set_title("After standardization")
 ax.set_xlabel('Number of points in the search sphere')
 ax.set_ylabel('Freq')
-ax.set_ylim([0, 20000])
-ax.axvline(sigma_1, color='red', label="$1\sigma$")
-ax.axvline(sigma_2, color='blue', label="$2\sigma$")
-ax.axvline(sigma_3, color='green', label="$3\sigma$")
+# ax.set_ylim([0, 100000])
+# ax.axvline(sigma_1, color='red', label="$1\sigma$")
+# ax.axvline(sigma_2, color='blue', label="$2\sigma$")
+# ax.axvline(sigma_3, color='green', label="$3\sigma$")
 
 plt.legend(fontsize=16)
 plt.show()

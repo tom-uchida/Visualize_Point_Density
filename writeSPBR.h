@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <cstdlib>
+#include <time.h>
 
 enum WritingDataType {
     Ascii = 0,
@@ -39,6 +40,7 @@ void writeSPBR( kvs::PolygonObject *_ply,
 
     // Write to ouput file
     std::cout << "\nNow writing..." << std::endl;
+    clock_t start = clock(); // Start time count
     for ( int i = 0; i < num; i++ ) {
         // coords                                               
         float x = coords[3*i];
@@ -92,6 +94,10 @@ void writeSPBR( kvs::PolygonObject *_ply,
                     << std::endl;
         }
     } // end for
+
+    // End time clock
+    clock_t end = clock();
+    std::cout << "Writing done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
 
     fout.close();
 }

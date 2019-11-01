@@ -9,7 +9,7 @@
 
 #include <numeric>
 
-// #define HISTOGRAM_MODE
+#define CREATE_HISTOGRAM_MODE
 
 calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
     m_max_point_num( -1 ),
@@ -90,12 +90,9 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
     std::vector<int>    pointIndex;
     std::vector<float>  pointSquaredDistance;
 
-    // Start time count
-    std::cout << "\nClock start" << std::endl;
-    clock_t start = clock();
-    std::cout << "Now searching and calculating ..." << std::endl;
-    
     // Search nearest points by using kdTree
+    clock_t start = clock(); // Start time count
+    std::cout << "Now searching and calculating ..." << std::endl;
     int display_interval = 1e06;
     for ( size_t i = 0; i < m_number_of_points; i++ ) {
         // Processing ratio
@@ -155,7 +152,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
     // End time clock
     clock_t end = clock();
-    std::cout << "Done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
+    std::cout << "Calculating done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
 
     if ( m_type == RadiusSearch ) {
         // Show result
@@ -178,11 +175,13 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 } // End exec( std::vector<pcl::PointXYZ> &_points )
 
 void calcPointDensity::normalizePointDensities() {
+#ifdef CREATE_HISTOGRAM_MODE
     std::ofstream fout_before( "SPBR_DATA/norm_before.csv" );
     std::ofstream fout_after( "SPBR_DATA/norm_after.csv" );
+#endif
 
     for (int i = 0; i < m_point_densities.size(); i++) {
-#ifdef HISTOGRAM_MODE
+#ifdef CREATE_HISTOGRAM_MODE
         fout_before << m_point_densities[i] << std::endl;
 #endif
         // Normalize
@@ -192,7 +191,7 @@ void calcPointDensity::normalizePointDensities() {
             m_point_densities[i] = m_point_densities[i] / m_max_avg_dist;
         }
 
-#ifdef HISTOGRAM_MODE
+#ifdef CREATE_HISTOGRAM_MODE
         fout_after << m_point_densities[i] << std::endl;
 #endif
     }
@@ -211,18 +210,19 @@ void calcPointDensity::adjustPointDensities() {
     // std::cout << "Variance: " << var << std::endl;
     std::cout << "SD:       " << std << std::endl;
 
+    double sigma_1 = avg+1*std;
     double sigma_2 = avg+2*std;
     double sigma_3 = avg+3*std;
     // for (int i = 0; i < m_point_densities.size(); i++) {
     for (const double &i : m_point_densities){
         // Remove outlier
-        if (i >= sigma_2)
-            m_point_densities[i] = sigma_2;
+        if (i >= sigma_1)
+            m_point_densities[i] = sigma_1;
     }
 
     if ( m_type == RadiusSearch ) {
         // m_max_point_num = sigma_3;
-        m_max_point_num = sigma_2;
+        m_max_point_num = sigma_1;
         std::cout << "\nNew max num. of points";
         std::cout << " : " << m_max_point_num    << std::endl;
     } else if ( m_type == NearestKSearch ) {
