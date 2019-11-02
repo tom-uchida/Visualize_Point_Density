@@ -30,8 +30,8 @@ void calcPointDensity::setSearchRadius( double _divide_value, kvs::Vector3f _bbm
     kvs::Vector3f bb        = _bbmax - _bbmin;  // Diagonal vector
     double diagonal_length  = bb.length();      // Diagonal length
     m_searchRadius          = diagonal_length / _divide_value; // Diagonal length / divide
-    std::cout << "> search_radius : " << m_searchRadius;
-    std::cout << " (= " << diagonal_length << " / " << _divide_value << ")" << std::endl;
+    std::cout << "> search_radius: " << m_searchRadius;
+    std::cout << " (= " << diagonal_length << "/" << _divide_value << ")" << std::endl;
 }
 
 void calcPointDensity::setNearestK( int _k) {
@@ -92,7 +92,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
     // Search nearest points by using kdTree
     clock_t start = clock(); // Start time count
-    std::cout << "Now searching and calculating ..." << std::endl;
+    std::cout << "\nNow searching and calculating ..." << std::endl;
     int display_interval = 1e06;
     for ( size_t i = 0; i < m_number_of_points; i++ ) {
         // Processing ratio
@@ -100,7 +100,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
         // Display messages
         if ( !(i % display_interval) && i > 0 ) { 
-            std::cout << "*** Num. of processed points : " << i;
+            std::cout << "*** Num. of processed points: " << i;
             std::cout << " [" << processing_ratio << " %]" << std::endl;
         }
 
@@ -152,27 +152,58 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
     // End time clock
     clock_t end = clock();
-    std::cout << "Calculating done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
+    std::cout << "Done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
+} // End exec( std::vector<pcl::PointXYZ> &_points )
 
+void calcPointDensity::adjustPointDensities() {
+    // Calc. max and min
     if ( m_type == RadiusSearch ) {
         // Show result
         m_max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());
         m_min_point_num = *std::min_element(m_point_densities.begin(), m_point_densities.end());
-        std::cout << "\nMax num. of points";
-        std::cout << " : " << m_max_point_num    << std::endl;
-        std::cout << "Min num. of points";
-        std::cout << " : " << m_min_point_num    << std::endl;
+        std::cout << "\nMax num of points: " << m_max_point_num    << std::endl;
+        std::cout << "Min num of points: " << m_min_point_num    << std::endl;
 
     } else if ( m_type == NearestKSearch ) {
          // Show result
         m_max_avg_dist = *std::max_element(m_point_densities.begin(), m_point_densities.end());
         m_min_avg_dist = *std::min_element(m_point_densities.begin(), m_point_densities.end());
-        std::cout << "\nMax avg. distance";
-        std::cout << " : " << m_max_avg_dist    << std::endl;
-        std::cout << "Min avg. distance";
-        std::cout << " : " << m_min_avg_dist    << std::endl;
+        std::cout << "\nMax avg distance: " << m_max_avg_dist    << std::endl;
+        std::cout << "Min avg distance: " << m_min_avg_dist    << std::endl;
     } // end if
-} // End exec( std::vector<pcl::PointXYZ> &_points )
+
+    // Calc. statistics
+    double avg = 0.0, var = 0.0, std = 0.0;
+    for (const double &i : m_point_densities){
+        avg += i;
+        var += i * i;
+    }
+    avg /= m_point_densities.size();
+    var = var/m_point_densities.size() - avg*avg;
+    std = sqrt(var);
+    std::cout << "Average: " << avg << std::endl;
+    // std::cout << "Variance: " << var << std::endl;
+    std::cout << "SD: " << std << std::endl;
+
+    double sigma_1 = avg+1*std;
+    double sigma_2 = avg+2*std;
+    double sigma_3 = avg+3*std;
+    double threshold_outlier = sigma_1;
+    // for (int i = 0; i < m_point_densities.size(); i++) {
+    for (const double &i : m_point_densities){
+        // Remove outlier
+        if (m_point_densities[i] > threshold_outlier)
+            m_point_densities[i] = threshold_outlier;
+    } // end for
+
+    // Update max point density
+    if ( m_type == RadiusSearch ) {
+        m_max_point_num = threshold_outlier;
+        std::cout << "\nNew max num of points: " << m_max_point_num << std::endl;
+    } else if ( m_type == NearestKSearch ) {
+        m_max_avg_dist = threshold_outlier;
+    } // end if
+} // End adjustPointDensity()
 
 void calcPointDensity::normalizePointDensities() {
 #ifdef CREATE_HISTOGRAM_MODE
@@ -186,46 +217,17 @@ void calcPointDensity::normalizePointDensities() {
 #endif
         // Normalize
         if ( m_type == RadiusSearch ) {
-            m_point_densities[i] = m_point_densities[i] / m_max_point_num;
+            m_point_densities[i] /= m_max_point_num;
         } else if ( m_type == NearestKSearch ) {
-            m_point_densities[i] = m_point_densities[i] / m_max_avg_dist;
-        }
+            m_point_densities[i] /= m_max_avg_dist;
+        } // end if
 
 #ifdef CREATE_HISTOGRAM_MODE
         fout_after << m_point_densities[i] << std::endl;
 #endif
-    }
-} // End normalizePointDencities()
+    } // end for
 
-void calcPointDensity::adjustPointDensities() {
-    double avg = 0.0, var = 0.0, std = 0.0;
-    for (const double &i : m_point_densities){
-        avg += i;
-        var += i * i;
-    }
-    avg /= m_point_densities.size();
-    var = var/m_point_densities.size() - avg*avg;
-    std = sqrt(var);
-    std::cout << "\nAverage:  " << avg << std::endl;
-    // std::cout << "Variance: " << var << std::endl;
-    std::cout << "SD:       " << std << std::endl;
-
-    double sigma_1 = avg+1*std;
-    double sigma_2 = avg+2*std;
-    double sigma_3 = avg+3*std;
-    // for (int i = 0; i < m_point_densities.size(); i++) {
-    for (const double &i : m_point_densities){
-        // Remove outlier
-        if (i >= sigma_1)
-            m_point_densities[i] = sigma_1;
-    }
-
-    if ( m_type == RadiusSearch ) {
-        // m_max_point_num = sigma_3;
-        m_max_point_num = sigma_1;
-        std::cout << "\nNew max num. of points";
-        std::cout << " : " << m_max_point_num    << std::endl;
-    } else if ( m_type == NearestKSearch ) {
-        m_max_avg_dist = sigma_3;
-    }
-} // End adjustPointDencities()
+    std::cout << "\nNormalized point dencities." << std::endl;
+    double max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());
+    std::cout << "Max num of points: " << max_point_num << std::endl;
+} // End normalizePointDencity()

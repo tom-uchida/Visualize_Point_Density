@@ -38,8 +38,8 @@ void writeSPBR( kvs::PolygonObject *_ply,
         fout << "#/EndHeader"             << std::endl;
     }
 
-    // Write to ouput file
-    std::cout << "\nNow writing..." << std::endl;
+    // Write to ouput spbr file
+    std::cout << "\nWriting spbr file (" << _filename << ")..." << std::endl;
     clock_t start = clock(); // Start time count
     for ( int i = 0; i < num; i++ ) {
         // coords                                               
@@ -97,7 +97,7 @@ void writeSPBR( kvs::PolygonObject *_ply,
 
     // End time clock
     clock_t end = clock();
-    std::cout << "Writing done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
+    std::cout << "Done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
 
     fout.close();
 }

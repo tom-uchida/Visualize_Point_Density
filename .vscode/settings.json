@@ -74,6 +74,7 @@
         "random": "cpp",
         "memory_resource": "cpp",
         "optional": "cpp",
-        "numeric": "cpp"
+        "numeric": "cpp",
+        "list": "cpp"
     }
 }

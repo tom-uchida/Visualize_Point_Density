@@ -21,20 +21,22 @@
 
 const char OUT_FILE[] = "SPBR_DATA/output.spbr";
 
-int main( int argc, char** argv ) {
-    char outSPBRfile[128];
-    strcpy( outSPBRfile, OUT_FILE ); 
-
-    // Message                                                                     
+void message() {
     std::cout << "================================="    << std::endl;
     std::cout << "     Visualize Point Density "        << std::endl;
     std::cout << "         Tomomasa Uchida "            << std::endl;
     std::cout << "           2019/10/28 "               << std::endl;
     std::cout << "================================="    << std::endl;
     std::cout << std::endl;
+}
+
+int main( int argc, char** argv ) {
+    char outSPBRfile[128];
+    strcpy( outSPBRfile, OUT_FILE ); 
+    message();
 
     if ( argc != 3 ) {
-        std::cerr << "USAGE: ./vpd input.spbr output.spbr" << std::endl;
+        std::cerr << "USAGE: $ ./vpd [input.spbr] [output.spbr]" << std::endl;
         exit(1);
     } else {
         strcpy( outSPBRfile, argv[2] );
@@ -46,7 +48,7 @@ int main( int argc, char** argv ) {
     std::cout << "\nPLY Min, Max Coords:" << std::endl;
     std::cout << "Min : " << ply->minObjectCoord() << std::endl;
     std::cout << "Max : " << ply->maxObjectCoord() << std::endl;
-    std::cout << "Number of points : " << ply->numberOfVertices() << std::endl;
+    std::cout << "Number of points: " << ply->numberOfVertices() << std::endl;
 
     // Calculate Point Dencity
     calcPointDensity *cpd = new calcPointDensity( /* kvs::PolygonObject* */ ply );
@@ -54,8 +56,8 @@ int main( int argc, char** argv ) {
     // STEP 1: Select search type //
     //============================//
     int search_type = -1;
-    std::cout << "\nSelect search type ";
-    std::cout << "( 0: RadiusSearch or 1: NearestKSearch ) : ";
+    std::cout << "\nSelect search type. ";
+    std::cout << "(0: RadiusSearch or 1: NearestKSearch): ";
     std::cin >> search_type;
     if ( search_type == 0 ) {
         cpd->setSearchType( calcPointDensity::RadiusSearch );
@@ -65,8 +67,8 @@ int main( int argc, char** argv ) {
         // STEP 2: Set radius //
         //====================//
         int divide = 0;
-        std::cout << "\nSet divide value ";
-        std::cout << "( search_radius = diagonal_length / divide_value ) : ";
+        std::cout << "\nSet divide value. ";
+        std::cout << "(search_radius = diagonal_length/divide_value): ";
         std::cin >> divide;
         cpd->setSearchRadius( divide, ply->minObjectCoord(), ply->maxObjectCoord() );
         //std::cout << "> " << divide << std::endl;
@@ -79,7 +81,7 @@ int main( int argc, char** argv ) {
         // STEP 2: Set nearest K //
         //=======================//
         int K = 0;
-        std::cout << "\nSet nearest K : ";
+        std::cout << "\nSet nearest K: ";
         std::cin >> K;
         cpd->setNearestK(K);
         std::cout << "> " << K << std::endl;
