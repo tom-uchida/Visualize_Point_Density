@@ -9,7 +9,7 @@
 
 #include <numeric>
 
-#define CREATE_HISTOGRAM_MODE
+// #define CREATE_HISTOGRAM_MODE
 
 calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
     m_max_point_num( -1 ),
@@ -185,21 +185,22 @@ void calcPointDensity::adjustPointDensities() {
     // std::cout << "Variance: " << var << std::endl;
     std::cout << "SD: " << std << std::endl;
 
+    // Remove outlier
     double sigma_1 = avg+1*std;
     double sigma_2 = avg+2*std;
     double sigma_3 = avg+3*std;
-    double threshold_outlier = sigma_1;
-    // for (int i = 0; i < m_point_densities.size(); i++) {
-    for (const double &i : m_point_densities){
-        // Remove outlier
-        if (m_point_densities[i] > threshold_outlier)
+    int threshold_outlier = (int)sigma_1;
+    for (int i = 0; i < m_point_densities.size(); i++) {
+    // for (const double &i : m_point_densities){
+        if (m_point_densities[i] >= threshold_outlier)
             m_point_densities[i] = threshold_outlier;
     } // end for
 
     // Update max point density
     if ( m_type == RadiusSearch ) {
         m_max_point_num = threshold_outlier;
-        std::cout << "\nNew max num of points: " << m_max_point_num << std::endl;
+        std::cout << "\nAdjusted point densities vector." << std::endl;
+        std::cout << "Max num of points: " << m_max_point_num << std::endl;
     } else if ( m_type == NearestKSearch ) {
         m_max_avg_dist = threshold_outlier;
     } // end if
@@ -227,7 +228,7 @@ void calcPointDensity::normalizePointDensities() {
 #endif
     } // end for
 
-    std::cout << "\nNormalized point dencities." << std::endl;
+    std::cout << "\nNormalized point densities vector." << std::endl;
     double max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());
     std::cout << "Max num of points: " << max_point_num << std::endl;
 } // End normalizePointDencity()
