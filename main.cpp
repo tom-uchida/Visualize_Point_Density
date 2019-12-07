@@ -19,6 +19,8 @@
 #include <kvs/PointRenderer> 
 #include <kvs/Coordinate> 
 
+// #define ADJUST_POINT_DENSITIES_MODE
+
 const char OUT_FILE[] = "SPBR_DATA/output.spbr";
 
 void message() {
@@ -91,7 +93,9 @@ int main( int argc, char** argv ) {
     }
 
     cpd->calc( ply );
+#ifdef ADJUST_POINT_DENSITIES_MODE
     cpd->adjustPointDensities();
+#endif
     cpd->normalizePointDensities();
     const std::vector<double> normalized_point_densities = cpd->getPointDensities();
     // End Calculate Point Density

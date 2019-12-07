@@ -9,7 +9,7 @@
 
 #include <numeric>
 
-// #define CREATE_HISTOGRAM_MODE
+#define CREATE_HISTOGRAM_MODE
 
 calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
     m_max_point_num( -1 ),
