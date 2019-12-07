@@ -57,6 +57,6 @@ Min point density : 0.016313
 ```
 
 ## Result
-|八幡山|船鉾|ボロブドゥール寺院|
+|Hachiman-yama|Fune-hoko float|Borobudur|
 |:-:|:-:|:-:|
 |![img1](sample_images/hachimanyama.bmp)|![img2](sample_images/funehoko.bmp)|![img3](sample_images/borobu.bmp)|
