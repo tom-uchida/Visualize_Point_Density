@@ -156,22 +156,6 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 } // End exec( std::vector<pcl::PointXYZ> &_points )
 
 void calcPointDensity::adjustPointDensities() {
-    // Calc. max and min
-    if ( m_type == RadiusSearch ) {
-        // Show result
-        m_max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());
-        m_min_point_num = *std::min_element(m_point_densities.begin(), m_point_densities.end());
-        std::cout << "\nMax num of points: " << m_max_point_num    << std::endl;
-        std::cout << "Min num of points: " << m_min_point_num    << std::endl;
-
-    } else if ( m_type == NearestKSearch ) {
-         // Show result
-        m_max_avg_dist = *std::max_element(m_point_densities.begin(), m_point_densities.end());
-        m_min_avg_dist = *std::min_element(m_point_densities.begin(), m_point_densities.end());
-        std::cout << "\nMax avg distance: " << m_max_avg_dist    << std::endl;
-        std::cout << "Min avg distance: " << m_min_avg_dist    << std::endl;
-    } // end if
-
     // Calc. statistics
     double avg = 0.0, var = 0.0, std = 0.0;
     for (const double &i : m_point_densities){
@@ -206,12 +190,31 @@ void calcPointDensity::adjustPointDensities() {
     } // end if
 } // End adjustPointDensity()
 
+void calcPointDensity::calcMaxMin4PointDensities() {
+    // Calc. max and min
+    if ( m_type == RadiusSearch ) {
+        // Show result
+        m_max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());
+        m_min_point_num = *std::min_element(m_point_densities.begin(), m_point_densities.end());
+        std::cout << "\nMax num of points: " << m_max_point_num    << std::endl;
+        std::cout << "Min num of points: " << m_min_point_num    << std::endl;
+
+    } else if ( m_type == NearestKSearch ) {
+         // Show result
+        m_max_avg_dist = *std::max_element(m_point_densities.begin(), m_point_densities.end());
+        m_min_avg_dist = *std::min_element(m_point_densities.begin(), m_point_densities.end());
+        std::cout << "\nMax avg distance: " << m_max_avg_dist    << std::endl;
+        std::cout << "Min avg distance: " << m_min_avg_dist    << std::endl;
+    } // end if
+} // End calcMaxMin4PointDensities()
+
 void calcPointDensity::normalizePointDensities() {
 #ifdef CREATE_HISTOGRAM_MODE
     std::ofstream fout_before( "SPBR_DATA/norm_before.csv" );
     std::ofstream fout_after( "SPBR_DATA/norm_after.csv" );
 #endif
 
+    std::cout << "\nWriting csv file ..." << std::endl;
     for (int i = 0; i < m_point_densities.size(); i++) {
 #ifdef CREATE_HISTOGRAM_MODE
         fout_before << m_point_densities[i] << std::endl;

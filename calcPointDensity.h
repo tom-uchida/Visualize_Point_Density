@@ -21,8 +21,10 @@ public:
     void    setSearchRadius( double _divide_value, kvs::Vector3f _bbmin, kvs::Vector3f _bbmax );
     void    setNearestK( int _k );
     void    calc( kvs::PolygonObject* _ply );
-    void    normalizePointDensities( void );
     void    adjustPointDensities( void );
+    void    calcMaxMin4PointDensities( void );
+    void    normalizePointDensities( void );
+
     int     getMaxPointNum( void ) { return m_max_point_num; }
     int     getMinPointNum( void ) { return m_min_point_num; }
     double  getMaxAvgDistance( void ) { return m_max_avg_dist; }

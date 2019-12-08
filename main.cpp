@@ -93,6 +93,7 @@ int main( int argc, char** argv ) {
     }
 
     cpd->calc( ply );
+    cpd->calcMaxMin4PointDensities();
 #ifdef ADJUST_POINT_DENSITIES_MODE
     cpd->adjustPointDensities();
 #endif
