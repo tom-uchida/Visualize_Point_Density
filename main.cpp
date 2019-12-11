@@ -69,8 +69,10 @@ int main( int argc, char** argv ) {
         // STEP 2: Set radius //
         //====================//
         int divide = 0;
-        std::cout << "\nSet divide value. ";
-        std::cout << "(search_radius = diagonal_length/divide_value): ";
+        kvs::Vector3f bb_dia_vec = ply->maxObjectCoord() - ply->minObjectCoord();  // Diagonal vector
+        std::cout << "\ndiagonal_length = " << bb_dia_vec.length() << std::endl;
+        std::cout << "Set divide value. ";
+        std::cout << "(search_radius = diagonal_length / divide_value): ";
         std::cin >> divide;
         cpd->setSearchRadius( divide, ply->minObjectCoord(), ply->maxObjectCoord() );
         //std::cout << "> " << divide << std::endl;
