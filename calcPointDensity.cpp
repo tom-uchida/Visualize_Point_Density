@@ -173,7 +173,8 @@ void calcPointDensity::adjustPointDensities() {
     double sigma_1 = avg+1*std;
     double sigma_2 = avg+2*std;
     double sigma_3 = avg+3*std;
-    int threshold_outlier = (int)sigma_1;
+    // int threshold_outlier = (int)sigma_1;
+    int threshold_outlier = (int)avg;
     for (int i = 0; i < m_point_densities.size(); i++) {
     // for (const double &i : m_point_densities){
         if (m_point_densities[i] >= threshold_outlier)
@@ -185,6 +186,7 @@ void calcPointDensity::adjustPointDensities() {
         m_max_point_num = threshold_outlier;
         std::cout << "\nAdjusted point densities vector." << std::endl;
         std::cout << "Max num of points: " << m_max_point_num << std::endl;
+        
     } else if ( m_type == NearestKSearch ) {
         m_max_avg_dist = threshold_outlier;
     } // end if
