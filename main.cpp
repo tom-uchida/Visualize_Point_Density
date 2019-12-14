@@ -19,7 +19,7 @@
 #include <kvs/PointRenderer> 
 #include <kvs/Coordinate> 
 
-// #define ADJUST_POINT_DENSITIES_MODE
+#define ADJUST_POINT_DENSITIES_MODE
 
 const char OUT_FILE[] = "SPBR_DATA/output.spbr";
 

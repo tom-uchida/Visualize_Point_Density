@@ -152,7 +152,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
     // End time clock
     clock_t end = clock();
-    std::cout << "Done! " << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " (minute)" << std::endl;
+    std::cout << "Done calculating point densities! (" << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " [minute])" << std::endl;
 } // End exec( std::vector<pcl::PointXYZ> &_points )
 
 void calcPointDensity::adjustPointDensities() {
@@ -174,7 +174,8 @@ void calcPointDensity::adjustPointDensities() {
     double sigma_2 = avg+2*std;
     double sigma_3 = avg+3*std;
     // int threshold_outlier = (int)sigma_1;
-    int threshold_outlier = (int)avg;
+    // int threshold_outlier = (int)avg;
+    int threshold_outlier = (int)sigma_2;
     for (int i = 0; i < m_point_densities.size(); i++) {
     // for (const double &i : m_point_densities){
         if (m_point_densities[i] >= threshold_outlier)
@@ -232,6 +233,7 @@ void calcPointDensity::normalizePointDensities() {
         fout_after << m_point_densities[i] << std::endl;
 #endif
     } // end for
+    std::cout << "Done writing csv file!" << std::endl;
 
     std::cout << "\nNormalized point densities vector." << std::endl;
     double max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());
