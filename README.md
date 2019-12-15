@@ -59,4 +59,4 @@ Min point density : 0.016313
 ## Result
 |Hachiman-yama|Fune-hoko float|Borobudur|
 |:-:|:-:|:-:|
-|![img1](sample_images/hachimanyama.bmp)|![img2](sample_images/funehoko_L100.png)|![img3](sample_images/borobu.bmp)|
+|<img src="sample_images/ookabuto.png" width="1000">|<img src="sample_images/funehoko_L100.png" width="1000">|<img src="sample_images/nakajimake_L100.png" width="1100">|
