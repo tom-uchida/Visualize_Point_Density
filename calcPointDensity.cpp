@@ -173,9 +173,10 @@ void calcPointDensity::adjustPointDensities() {
     double sigma_1 = avg+1*std;
     double sigma_2 = avg+2*std;
     double sigma_3 = avg+3*std;
-    // int threshold_outlier = (int)sigma_1;
     // int threshold_outlier = (int)avg;
-    int threshold_outlier = (int)sigma_2;
+    // int threshold_outlier = (int)sigma_1;
+    // int threshold_outlier = (int)sigma_2;
+    int threshold_outlier = (int)sigma_3;
     for (int i = 0; i < m_point_densities.size(); i++) {
     // for (const double &i : m_point_densities){
         if (m_point_densities[i] >= threshold_outlier)
