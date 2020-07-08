@@ -9,7 +9,7 @@
 
 #include <numeric>
 
-#define CREATE_HISTOGRAM_MODE
+// #define CREATE_HISTOGRAM_MODE
 
 calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
     m_max_point_num( -1 ),
@@ -175,8 +175,8 @@ void calcPointDensity::adjustPointDensities() {
     double sigma_3 = avg+3*std;
     // int threshold_outlier = (int)avg;
     // int threshold_outlier = (int)sigma_1;
-    // int threshold_outlier = (int)sigma_2;
-    int threshold_outlier = (int)sigma_3;
+    int threshold_outlier = (int)sigma_2;
+    // int threshold_outlier = (int)sigma_3;
     for (int i = 0; i < m_point_densities.size(); i++) {
     // for (const double &i : m_point_densities){
         if (m_point_densities[i] >= threshold_outlier)
@@ -186,7 +186,7 @@ void calcPointDensity::adjustPointDensities() {
     // Update max point density
     if ( m_type == RadiusSearch ) {
         m_max_point_num = threshold_outlier;
-        std::cout << "\nAdjusted point densities vector." << std::endl;
+        std::cout << "\nAdjusted point densities vector. (Excluded outliers)" << std::endl;
         std::cout << "Max num of points: " << m_max_point_num << std::endl;
         
     } else if ( m_type == NearestKSearch ) {
@@ -214,8 +214,8 @@ void calcPointDensity::calcMaxMin4PointDensities() {
 
 void calcPointDensity::normalizePointDensities() {
 #ifdef CREATE_HISTOGRAM_MODE
-    std::ofstream fout_before( "SPBR_DATA/norm_before.csv" );
-    std::ofstream fout_after( "SPBR_DATA/norm_after.csv" );
+    std::ofstream fout_before( "SPBR_DATA/tmp/norm_before.csv" );
+    // std::ofstream fout_after( "SPBR_DATA/tmp/norm_after.csv" );
 #endif
 
     std::cout << "\nWriting csv file ..." << std::endl;
@@ -223,6 +223,7 @@ void calcPointDensity::normalizePointDensities() {
 #ifdef CREATE_HISTOGRAM_MODE
         fout_before << m_point_densities[i] << std::endl;
 #endif
+
         // Normalize
         if ( m_type == RadiusSearch ) {
             m_point_densities[i] /= m_max_point_num;
@@ -233,6 +234,7 @@ void calcPointDensity::normalizePointDensities() {
 #ifdef CREATE_HISTOGRAM_MODE
         fout_after << m_point_densities[i] << std::endl;
 #endif
+
     } // end for
     std::cout << "Done writing csv file!" << std::endl;
 

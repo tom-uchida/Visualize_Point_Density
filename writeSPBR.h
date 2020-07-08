@@ -91,7 +91,7 @@ void writeSPBR( kvs::PolygonObject *_ply,
             fout    << x   << " " << y  << " " << z  << " "
                     << nx  << " " << ny << " " << nz << " "
                     << r   << " " << g  << " " << b  << " " 
-                    << std::endl;
+                    << "\n";
         }
     } // end for
 
