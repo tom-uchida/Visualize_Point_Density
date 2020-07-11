@@ -1,6 +1,7 @@
 # Visualize Point Density
+
 ## Overview
-Visualize point density by using colormap "viridis".
+Visualize point density of the point cloud by using colormap "viridis".
 
 ## Usage
 `./vpd [input_file] [output_file]`
@@ -56,7 +57,11 @@ Max point density : 0.30644
 Min point density : 0.016313
 ```
 
-## Result
+## Visualization Results
+|L=1|L=50|L=100|
+|:-:|:-:|:-:|
+|<img src="figures/LiDAR/upper_L1.bmp" width="1000">|<img src="figures/LiDAR/upper_L50.bmp" width="1000">|<img src="figures/LiDAR/upper_L100.bmp" width="1000">|
+
 |Hachiman-yama|Fune-hoko float|Borobudur|
 |:-:|:-:|:-:|
-|<img src="sample_images/ookabuto.png" width="1000">|<img src="sample_images/funehoko_L100.png" width="1000">|<img src="sample_images/nakajimake_L100.png" width="1100">|
+|<img src="figures/ookabuto.png" width="1000">|<img src="figures/funehoko_L100.png" width="1000">|<img src="figures/nakajimake_L100.png" width="1100">|

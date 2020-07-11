@@ -1,8 +1,9 @@
-vpd
-Makefile
-Makefile.kvs
-*.o
-*.spbr
-*.txt
-SPBR_DATA/
 .vscode
+
+src/vpd
+src/Makefile
+src/Makefile.kvs
+src/*.o
+src/*.spbr
+src/*.txt
+src/SPBR_DATA/
