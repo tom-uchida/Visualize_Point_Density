@@ -1,4 +1,4 @@
-.vscode
+.vscode/
 
 src/vpd
 src/Makefile
