@@ -8,8 +8,14 @@
 #include <cstdlib>
 
 #include <numeric>
+#include "octree.h"
 
 // #define CREATE_HISTOGRAM_MODE
+
+const int INTERVA    = 1000000;
+const double EPSILON = 1.0e-16;
+const int MIN_NODE   = 15;
+const int DIM        = 3;
 
 calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
     m_max_point_num( -1 ),
@@ -39,40 +45,94 @@ void calcPointDensity::setNearestK( int _k) {
 }
 
 void calcPointDensity::calc( kvs::PolygonObject* _ply ) {
-    std::vector<pcl::PointXYZ>  points4pcl;
-    std::vector<float>          normal;
+    _ply->updateMinMaxCoords();
+    kvs::ValueArray<kvs::Real32> coords = _ply->coords();
+    float *pdata = coords.data();
+    m_number_of_points = _ply->numberOfVertices();
+    kvs::Vector3f minBB = _ply->minObjectCoord();
+    kvs::Vector3f maxBB = _ply->maxObjectCoord();
 
-    kvs::ValueArray<kvs::Real32> coords  = _ply->coords(); 
-    kvs::ValueArray<kvs::Real32> normals = _ply->normals();
-    size_t point_num = _ply->numberOfVertices();
-    m_number_of_points = point_num;
-    
-    bool hasNormal = false;
-    if ( point_num == _ply->numberOfNormals() ) hasNormal = true;
-    
-    // kvs::ValueArray<kvs::Real32> to pcl::PointXYZ( x, y, z )
-    for ( size_t i = 0; i < point_num; i++ ) {
-        float x     = coords[3*i];
-        float y     = coords[3*i+1];
-        float z     = coords[3*i+2];
-        float nx    = 0.0;
-        float ny    = 0.0;
-        float nz    = 0.0;    
-        if ( hasNormal ) {
-            nx = normals[3*i];
-            ny = normals[3*i+1];
-            nz = normals[3*i+2];
+    double *mrange = new double[6];
+    mrange[0] = (double)minBB.x();
+    mrange[1] = (double)maxBB.x();
+    mrange[2] = (double)minBB.y();
+    mrange[3] = (double)maxBB.y();
+    mrange[4] = (double)minBB.z();
+    mrange[5] = (double)maxBB.z();
+
+    // Create octree
+    std::cout << "Creating Octree...\n";
+    octree *myTree = new octree(    pdata,              /* float _points[] */
+                                    m_number_of_points, /* size_t _num_of_points */
+                                    mrange,             /* double _range[] */
+                                    MIN_NODE            /* int _num_of_min_node */ );
+
+    std::cout << "Start Octree Search..... " << std::endl;
+    for ( size_t i = 0; i < m_number_of_points; i++ ) {
+        if ( i == numVert ) --i;
+
+        double point[3] = { coords[3 * i],
+                            coords[3 * i + 1],
+                            coords[3 * i + 2] };
+
+        // Search near points
+        std::vector<size_t> nearInd;
+        std::vector<double> dist;
+        search_points(  point,              /* double p[] */
+                        m_searchRadius,     /* double R */
+                        pdata,              /* float points[] */
+                        myTree->octreeRoot, /* octreeNode *Node */
+                        &nearInd,           /* std::vector<size_t> *nearIndPtr */
+                        &dist               /* std::vector<double> *dist */ );
+        int n0 = (int)nearInd.size();
+
+        for ( int j = 0; j < n0; j++ ) {
+            double x = coords[3 * nearInd[j]];
+            double y = coords[3 * nearInd[j] + 1];
+            double z = coords[3 * nearInd[j] + 2];
         }
 
-        points4pcl.push_back( pcl::PointXYZ( x, y, z ) );
-        normal.push_back( nx );
-        normal.push_back( ny );
-        normal.push_back( nz );      
-    }
+        // Display progress
+        if ( !((i + 1) % INTERVAL) )
+            std::cout << i + 1 << ", " << n0 << "\n";
+    } // end for
+}
 
-    // Calculate point density
-    exec( points4pcl );
-} // End calc( kvs::PolygonObject* _ply )
+// void calcPointDensity::calc( kvs::PolygonObject* _ply ) {
+//     std::vector<pcl::PointXYZ>  points4pcl;
+//     std::vector<float>          normal;
+
+//     kvs::ValueArray<kvs::Real32> coords  = _ply->coords(); 
+//     kvs::ValueArray<kvs::Real32> normals = _ply->normals();
+//     size_t point_num = _ply->numberOfVertices();
+//     m_number_of_points = point_num;
+    
+//     bool hasNormal = false;
+//     if ( point_num == _ply->numberOfNormals() ) hasNormal = true;
+    
+//     // kvs::ValueArray<kvs::Real32> to pcl::PointXYZ( x, y, z )
+//     for ( size_t i = 0; i < point_num; i++ ) {
+//         float x     = coords[3*i];
+//         float y     = coords[3*i+1];
+//         float z     = coords[3*i+2];
+//         float nx    = 0.0;
+//         float ny    = 0.0;
+//         float nz    = 0.0;    
+//         if ( hasNormal ) {
+//             nx = normals[3*i];
+//             ny = normals[3*i+1];
+//             nz = normals[3*i+2];
+//         }
+
+//         points4pcl.push_back( pcl::PointXYZ( x, y, z ) );
+//         normal.push_back( nx );
+//         normal.push_back( ny );
+//         normal.push_back( nz );      
+//     }
+
+//     // Calculate point density
+//     exec( points4pcl );
+// } // End calc( kvs::PolygonObject* _ply )
 
 void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
     // http://pointclouds.org/documentation/tutorials/basic_structures.php#basic-structures
@@ -174,7 +234,7 @@ void calcPointDensity::adjustPointDensities() {
     double sigma_2 = avg+2*std;
     double sigma_3 = avg+3*std;
     // int threshold_outlier = (int)avg;
-    int threshold_outlier = (int)sigma_1;
+    int threshold_outlier = (int)sigma_2;
     // int threshold_outlier = (int)sigma_2;
     // int threshold_outlier = (int)sigma_3;
     for (int i = 0; i < m_point_densities.size(); i++) {
@@ -218,12 +278,13 @@ void calcPointDensity::normalizePointDensities() {
     // std::ofstream fout_after( "SPBR_DATA/tmp/norm_after.csv" );
 #endif
 
+#ifdef CREATE_HISTOGRAM_MODE
     std::cout << "\nWriting csv file ..." << std::endl;
+#endif
     for (int i = 0; i < m_point_densities.size(); i++) {
 #ifdef CREATE_HISTOGRAM_MODE
         fout_before << m_point_densities[i] << std::endl;
 #endif
-
         // Normalize
         if ( m_type == RadiusSearch ) {
             m_point_densities[i] /= m_max_point_num;
@@ -236,7 +297,9 @@ void calcPointDensity::normalizePointDensities() {
 #endif
 
     } // end for
+#ifdef CREATE_HISTOGRAM_MODE
     std::cout << "Done writing csv file!" << std::endl;
+#endif
 
     std::cout << "\nNormalized point densities vector." << std::endl;
     double max_point_num = *std::max_element(m_point_densities.begin(), m_point_densities.end());

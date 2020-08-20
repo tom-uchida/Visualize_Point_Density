@@ -11,23 +11,24 @@
 #include "calcPointDensity.h"
 #include "tinycolormap.h"
 
+#include <kvs/Application> 
+#include <kvs/Screen>
+#include <kvs/Camera>
 #include <kvs/PolygonObject>
 #include <kvs/PointObject>
-#include <kvs/glut/Application> 
-#include <kvs/glut/Screen>
-#include <kvs/Camera>
 #include <kvs/PointRenderer> 
 #include <kvs/Coordinate> 
+#include <kvs/ColorMap>
 
 #define ADJUST_POINT_DENSITIES_MODE
 
-const char OUT_FILE[] = "SPBR_DATA/output.spbr";
+const char OUT_FILE[] = "SPBR_DATA/output_vpd.spbr";
 
 void message() {
     std::cout << "================================="    << std::endl;
     std::cout << "     Visualize Point Density "        << std::endl;
     std::cout << "         Tomomasa Uchida "            << std::endl;
-    std::cout << "           2019/10/28 "               << std::endl;
+    std::cout << "           2020/08/20 "               << std::endl;
     std::cout << "================================="    << std::endl;
     std::cout << std::endl;
 }
@@ -44,13 +45,12 @@ int main( int argc, char** argv ) {
         strcpy( outSPBRfile, argv[2] );
     }
     
-    // Import "point cloud data（.ply, argv[1]）" that user selected
     ImportPointClouds *ply = new ImportPointClouds( argv[1] );
     ply->updateMinMaxCoords();
-    std::cout << "\nPLY Min, Max Coords:" << std::endl;
-    std::cout << "Min : " << ply->minObjectCoord() << std::endl;
-    std::cout << "Max : " << ply->maxObjectCoord() << std::endl;
-    std::cout << "Number of points: " << ply->numberOfVertices() << std::endl;
+    std::cout << "\nPLY Min, Max Coords:" << "\n";
+    std::cout << "Min : " << ply->minObjectCoord() << "\n";
+    std::cout << "Max : " << ply->maxObjectCoord() << "\n";
+    std::cout << "Number of points: " << ply->numberOfVertices() << "\n";
 
     // Calculate Point Dencity
     calcPointDensity *cpd = new calcPointDensity( /* kvs::PolygonObject* */ ply );
