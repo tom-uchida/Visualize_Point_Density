@@ -9,20 +9,23 @@
 class calcPointDensity {
 public:
     enum SearchType {
-        RadiusSearch = 0,
-        NearestKSearch = 1,
+        Octree = 0,
+        PCL_RadiusSearch = 1,
+        PCL_NearestKSearch = 2,
     };
 
 public:
+    calcPointDensity( void );
     calcPointDensity( kvs::PolygonObject* _ply );
 
-    void    setSearchType( SearchType _type );
-    void    setSearchRadius( double _distance );
-    void    setSearchRadius( double _divide_value, kvs::Vector3f _bbmin, kvs::Vector3f _bbmax );
-    void    setNearestK( int _k );
-    void    calc( kvs::PolygonObject* _ply );
-    void    adjustPointDensities( void );
-    void    calcMaxMin4PointDensities( void );
+    void    setSearchType( const SearchType _type );
+    void    setSearchRadius( const double _distance );
+    void    setSearchRadius( const double _divide_value, const kvs::Vector3f _bbmin, const kvs::Vector3f _bbmax );
+    void    setNearestK( const int _k );
+    void    calcWithOctree( const kvs::PolygonObject* _ply );
+    void    calcWithPCL( const kvs::PolygonObject* _ply );
+    void    calcMinMax4PointDensities( void );
+    void    removeOutlier4PointDensities( const int _sigma_section4outlier );
     void    normalizePointDensities( void );
 
     int     getMaxPointNum( void ) { return m_max_point_num; }
@@ -45,4 +48,5 @@ private:
 private:
     void exec( std::vector<pcl::PointXYZ> &_point );
 };
+
 #endif

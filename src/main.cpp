@@ -20,17 +20,18 @@
 #include <kvs/Coordinate> 
 #include <kvs/ColorMap>
 
-#define ADJUST_POINT_DENSITIES_MODE
+#define OCTREE_MODE
+// #define PCL_MODE
 
 const char OUT_FILE[] = "SPBR_DATA/output_vpd.spbr";
 
 void message() {
-    std::cout << "================================="    << std::endl;
-    std::cout << "     Visualize Point Density "        << std::endl;
-    std::cout << "         Tomomasa Uchida "            << std::endl;
-    std::cout << "           2020/08/20 "               << std::endl;
-    std::cout << "================================="    << std::endl;
-    std::cout << std::endl;
+    std::cout << "=================================" << std::endl;
+    std::cout << "     Visualize Point Density"      << std::endl;
+    std::cout << "         Tomomasa Uchida"          << std::endl;
+    std::cout << "           2020/08/20"             << std::endl;
+    std::cout << "=================================" << std::endl;
+    std::cout << "\n";
 }
 
 int main( int argc, char** argv ) {
@@ -38,22 +39,53 @@ int main( int argc, char** argv ) {
     strcpy( outSPBRfile, OUT_FILE ); 
     message();
 
-    if ( argc != 3 ) {
-        std::cerr << "USAGE: $ ./vpd [input.spbr] [output.spbr]" << std::endl;
+    if ( argc != 4 ) {
+        std::cout   << "  USAGE:\n  ";
+        std::cout   << argv[0] << " [input.spbr] [sigma_section_for_outlier] [output.spbr]";
+        std::cout   << "\n\n  EXAMPLE:\n  ";
+        std::cout   << argv[0] << " input.ply 2 output.spbr"
+                    << "\n\n"
+                    << "   [sigma_section_for_outlier]\n"
+                    << "    0: No Outlier\n"
+                    << "    1: 1σ < Outlier\n"
+                    << "    2: 2σ < Outlier\n"
+                    << "    3: 3σ < Outlier\n";
         exit(1);
     } else {
-        strcpy( outSPBRfile, argv[2] );
+        strcpy( outSPBRfile, argv[3] );
     }
     
     ImportPointClouds *ply = new ImportPointClouds( argv[1] );
     ply->updateMinMaxCoords();
-    std::cout << "\nPLY Min, Max Coords:" << "\n";
-    std::cout << "Min : " << ply->minObjectCoord() << "\n";
-    std::cout << "Max : " << ply->maxObjectCoord() << "\n";
+    kvs::Vector3f bb_min = ply->minObjectCoord();
+    kvs::Vector3f bb_max = ply->maxObjectCoord();
+    kvs::Vector3f bb_dia_vec = bb_min - bb_max;
+    std::cout << "\n";
+    std::cout << "PLY Min, Max Coords:\n";
+    std::cout << "Min : " << bb_min << "\n";
+    std::cout << "Max : " << bb_max << "\n";
     std::cout << "Number of points: " << ply->numberOfVertices() << "\n";
+    std::cout << "Diagonal length of BB: " << bb_dia_vec.length() << "\n";
 
-    // Calculate Point Dencity
-    calcPointDensity *cpd = new calcPointDensity( /* kvs::PolygonObject* */ ply );
+    // Calculate Point Density
+    // calcPointDensity *cpd = new calcPointDensity( /* kvs::PolygonObject* */ ply );
+    calcPointDensity *cpd = new calcPointDensity();
+
+#ifdef OCTREE_MODE
+    cpd->setSearchType( calcPointDensity::Octree );
+    
+    // Set radius
+    int divide = 0;
+    std::cout << "\n";
+    std::cout << "Set divide value. ";
+    std::cout << "(search radius = diagonal length / divide value): ";
+    std::cin >> divide;
+    cpd->setSearchRadius( divide, bb_min, bb_max );
+
+    cpd->calcWithOctree( ply );
+#endif
+
+#ifdef PCL_MODE
     //============================//
     // STEP 1: Select search type //
     //============================//
@@ -62,23 +94,22 @@ int main( int argc, char** argv ) {
     std::cout << "(0: RadiusSearch or 1: NearestKSearch): ";
     std::cin >> search_type;
     if ( search_type == 0 ) {
-        cpd->setSearchType( calcPointDensity::RadiusSearch );
+        cpd->setSearchType( calcPointDensity::PCL_RadiusSearch );
         std::cout << "> RadiusSearch" << std::endl;
 
         //====================//
         // STEP 2: Set radius //
         //====================//
         int divide = 0;
-        kvs::Vector3f bb_dia_vec = ply->maxObjectCoord() - ply->minObjectCoord();  // Diagonal vector
-        std::cout << "\ndiagonal_length = " << bb_dia_vec.length() << std::endl;
+        std::cout << "\n";
         std::cout << "Set divide value. ";
-        std::cout << "(search_radius = diagonal_length / divide_value): ";
+        std::cout << "(search radius = diagonal length / divide value): ";
         std::cin >> divide;
         cpd->setSearchRadius( divide, ply->minObjectCoord(), ply->maxObjectCoord() );
         //std::cout << "> " << divide << std::endl;
 
     } else if ( search_type == 1 ) {
-        cpd->setSearchType( calcPointDensity::NearestKSearch );
+        cpd->setSearchType( calcPointDensity::PCL_NearestKSearch );
         std::cout << "> NearestKSearch" << std::endl;
 
         //=======================//
@@ -94,11 +125,11 @@ int main( int argc, char** argv ) {
         exit(1);
     }
 
-    cpd->calc( ply );
-    cpd->calcMaxMin4PointDensities();
-#ifdef ADJUST_POINT_DENSITIES_MODE
-    cpd->adjustPointDensities();
+    cpd->calcWithPCL( ply );
 #endif
+
+    cpd->calcMinMax4PointDensities();
+    cpd->removeOutlier4PointDensities( atoi(argv[2]) );
     cpd->normalizePointDensities();
     const std::vector<double> normalized_point_densities = cpd->getPointDensities();
     // End Calculate Point Density
@@ -117,12 +148,11 @@ int main( int argc, char** argv ) {
     ply->setColors( kvs::ValueArray<kvs::UInt8>( colors ) );
     // End Apply Color
 
-    // Write to SPBR file
+    // Write to .spbr file
     WritingDataType type = Ascii;
     writeSPBR(  ply,          /* kvs::PolygonObject *_ply        */  
                 outSPBRfile,  /* char*              _filename    */  
-                type          /* WritingDataType    _type        */
-                );       
+                type          /* WritingDataType    _type        */ );       
 
     // Convert "kvs::PolygonObject" to "kvs::PointObject"
     kvs::PointObject* object = new kvs::PointObject( *ply );

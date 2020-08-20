@@ -1,12 +1,55 @@
 # Visualize Point Density
 
 ## Overview
-Visualize point density of the point cloud by using colormap "viridis".
+Visualize point density of the point cloud.
 
 ## Usage
-`./vpd [input_file] [output_file]`
+```
+=================================
+     Visualize Point Density
+         Tomomasa Uchida
+           2020/08/20
+=================================
 
-### RadiusSearch
+  USAGE:
+  ./vpd [input.spbr] [sigma_section_for_outlier] [output.spbr]
+
+  EXAMPLE:
+  ./vpd input.ply 2 output.spbr
+
+   [sigma_section_for_outlier]
+    0: No Outlier
+    1: 1σ < Outlier
+    2: 2σ < Outlier
+    3: 3σ < Outlier
+```
+
+### Octree
+```
+Set divide value. (search radius = diagonal length / divide value): 500
+> search radius: 0.0211673 (= 10.5836/500)
+
+Now Octree Searching... 
+10000000, 408 (points)
+20000000, 261 (points)
+Done Octree Search! (10.421 [minute])
+
+Max num of neighborhood points: 2272
+Min num of neighborhood points: 1
+Average: 375.53
+Standard Deviation: 300.97
+
+Removed outliers for point density vector.
+New max num of points: 977
+
+Normalized point density vector.
+Max num of points: 1
+
+Writing spbr file (SPBR_DATA/test.spbr)...
+Done writing spbr file! (0.868 [minute])
+```
+
+### PCL_RadiusSearch
 ```
 Select search type. (0: RadiusSearch or 1: NearestKSearch): 0
 > RadiusSearch
@@ -42,7 +85,7 @@ Writing spbr file (SPBR_DATA/borobu_out.spbr)...
 ```
 
 
-### NearestKSearch
+### PCL_NearestKSearch
 ```
 Select search type.(0:RadiusSearch or 1:NeatestKSearch) : 1
 > NearestKSearch
@@ -62,6 +105,6 @@ Min point density : 0.016313
 |:-:|:-:|:-:|
 |<img src="figures/LiDAR/upper_L1.bmp" width="1000">|<img src="figures/LiDAR/upper_L50.bmp" width="1000">|<img src="figures/LiDAR/upper_L100.bmp" width="1000">|
 
-|Hachiman-yama|Fune-hoko float|Borobudur|
+|Ookabuto|Fune-hoko float|Borobudur|
 |:-:|:-:|:-:|
 |<img src="figures/ookabuto.png" width="1000">|<img src="figures/funehoko_L100.png" width="1000">|<img src="figures/nakajimake_L100.png" width="1100">|
