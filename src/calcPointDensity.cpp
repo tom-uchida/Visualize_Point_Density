@@ -59,9 +59,9 @@ void calcPointDensity::calcWithOctree( const kvs::PolygonObject* _ply ) {
 
     // Create octree
     octree *myTree = new octree(    points,             /* float _points[] */
-                                    m_number_of_points, /* size_t _num_of_points */
+                                    m_number_of_points, /* size_t _Points */
                                     rangeBB,            /* double _range[] */
-                                    MIN_NODE            /* int _num_of_min_node */ );
+                                    MIN_NODE            /* int _nMinNode */ );
 
     std::cout << "\n";
     std::cout << "Now Octree Searching... " << std::endl;

@@ -1,15 +1,15 @@
 #include "octree.h"
 
-octree::octree(float _points[], size_t _num_of_points, double _range[], int _num_of_min_node)
+octree::octree(float _points[], size_t _nPoints, double _range[], int _nMinNode)
 {
-
     octreeRoot = new octreeNode;
 
-    for ( size_t i = 0; i < _num_of_points; i++ ) {
-        octreeRoot->pInd.push_back(i);
+    for ( size_t i = 0; i < _nPoints; i++ ) {
+        octreeRoot->pIdx.push_back( i );
     }
 
-    create_octree(  octreeRoot, _points, _num_of_min_node,
-                    _range[0], _range[1], _range[2], _range[3], _range[4], _range[5]);
-
+    create_octree(  octreeRoot, _points, _nPoints,
+                    _range[0], _range[1],
+                    _range[2], _range[3],
+                    _range[4], _range[5] );
 }
