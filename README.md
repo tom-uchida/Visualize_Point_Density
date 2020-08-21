@@ -118,7 +118,7 @@ Min point density : 0.016313
 ## Visualization Results
 |Viridis|Plasma|Inferno|Magma|Cividis|
 |:-:|:-:|:-:|:-:|:-:|
-|<img src="figures/ColorMap/viridis.bmp" width="1000">|<img src="figures/ColorMap/Plasma.bmp" width="1000">|<img src="figures/ColorMap/Inferno.bmp" width="1000">|<img src="figures/ColorMap/Magma.bmp" width="1000">|<img src="figures/ColorMap/Cividis.bmp" width="1000">|
+|<img src="figures/ColorMap/viridis.bmp" width="1000">|<img src="figures/ColorMap/plasma.bmp" width="1000">|<img src="figures/ColorMap/inferno.bmp" width="1000">|<img src="figures/ColorMap/magma.bmp" width="1000">|<img src="figures/ColorMap/cividis.bmp" width="1000">|
 
 |L=1|L=50|L=100|
 |:-:|:-:|:-:|
