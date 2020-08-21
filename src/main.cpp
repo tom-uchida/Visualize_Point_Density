@@ -7,9 +7,9 @@
 #include <cstdlib>
 #include <vector>
 #include "importPointClouds.h"
-#include "writeSPBR.h"
 #include "calcPointDensity.h"
-#include "tinycolormap.h"
+#include "colormap_option.h"
+#include "writeSPBR.h"
 
 #include <kvs/Application> 
 #include <kvs/Screen>
@@ -29,7 +29,7 @@ void message() {
     std::cout << "=================================" << std::endl;
     std::cout << "     Visualize Point Density"      << std::endl;
     std::cout << "         Tomomasa Uchida"          << std::endl;
-    std::cout << "           2020/08/20"             << std::endl;
+    std::cout << "           2020/08/21"             << std::endl;
     std::cout << "=================================" << std::endl;
     std::cout << "\n";
 }
@@ -39,20 +39,26 @@ int main( int argc, char** argv ) {
     strcpy( outSPBRfile, OUT_FILE ); 
     message();
 
-    if ( argc != 4 ) {
+    if ( argc != 5 ) {
         std::cout   << "  USAGE:\n  ";
-        std::cout   << argv[0] << " [input.spbr] [sigma_section_for_outlier] [output.spbr]";
+        std::cout   << argv[0] << " [input.spbr] [output.spbr] [sigma_section_for_outlier] [colormap_option]";
         std::cout   << "\n\n  EXAMPLE:\n  ";
-        std::cout   << argv[0] << " input.ply 2 output.spbr"
+        std::cout   << argv[0] << " input.ply output.spbr 2 -v"
                     << "\n\n"
                     << "   [sigma_section_for_outlier]\n"
                     << "    0: No Outlier\n"
                     << "    1: 1σ < Outlier\n"
                     << "    2: 2σ < Outlier\n"
-                    << "    3: 3σ < Outlier\n";
+                    << "    3: 3σ < Outlier\n\n"
+                    << "   [colormap_option]\n"
+                    << "    -v: Viridis\n"
+                    << "    -p: Plasma\n"
+                    << "    -i: Inferno\n"
+                    << "    -m: Magma\n"
+                    << "    -c: Cividis\n";
         exit(1);
     } else {
-        strcpy( outSPBRfile, argv[3] );
+        strcpy( outSPBRfile, argv[2] );
     }
     
     ImportPointClouds *ply = new ImportPointClouds( argv[1] );
@@ -65,11 +71,31 @@ int main( int argc, char** argv ) {
     std::cout << "Min : " << bb_min << "\n";
     std::cout << "Max : " << bb_max << "\n";
     std::cout << "Number of points: " << ply->numberOfVertices() << "\n";
-    std::cout << "Diagonal length of BB: " << bb_dia_vec.length() << "\n";
+    std::cout << "Diagonal length of BB: " << bb_dia_vec.length() << "\n\n";
 
-    // Calculate Point Density
-    // calcPointDensity *cpd = new calcPointDensity( /* kvs::PolygonObject* */ ply );
+    // Start Calculate Point Density
     calcPointDensity *cpd = new calcPointDensity();
+
+    // Set colormap type
+    kvs::ColorMap cmap;
+    for ( size_t i = 1; i < argc; i++ ) {
+        if ( !strncmp( VIRIDIS_OPTION, argv[i], strlen( VIRIDIS_OPTION ) ) ) {
+            cmap = kvs::ColorMap::Viridis( 256 );
+            std::cout << "ColorMap: Viridis\n"; i++;
+        } else if ( !strncmp( PLASMA_OPTION,    argv[i],    strlen( PLASMA_OPTION ) ) ) {
+            cmap = kvs::ColorMap::Plasma( 256 );
+            std::cout << "ColorMap: Plasma\n";  i++;
+        } else if ( !strncmp( INFERNO_OPTION,   argv[i],    strlen( INFERNO_OPTION ) ) ) {
+            cmap = kvs::ColorMap::Inferno( 256 );
+            std::cout << "ColorMap: Inferno\n"; i++;
+        } else if ( !strncmp( MAGMA_OPTION,     argv[i],    strlen( MAGMA_OPTION ) ) ) {
+            cmap = kvs::ColorMap::Magma( 256 );
+            std::cout << "ColorMap: Magma\n";   i++;
+        } else if ( !strncmp( CIVIDIS_OPTION,   argv[i],    strlen( CIVIDIS_OPTION ) ) ) {
+            cmap = kvs::ColorMap::Cividis( 256 );
+            std::cout << "ColorMap: Cividis\n"; i++;
+        } // end if
+    } // end for
 
 #ifdef OCTREE_MODE
     cpd->setSearchType( calcPointDensity::Octree );
@@ -129,27 +155,26 @@ int main( int argc, char** argv ) {
 #endif
 
     cpd->calcMinMax4PointDensities();
-    cpd->removeOutlier4PointDensities( atoi(argv[2]) );
+    cpd->removeOutlier4PointDensities( atoi(argv[3]) );
     cpd->normalizePointDensities();
-    const std::vector<double> normalized_point_densities = cpd->getPointDensities();
+    const std::vector<double> point_densities = cpd->getPointDensities();
     // End Calculate Point Density
 
-    // Apply Color
-    std::vector<unsigned char>  colors;
-    kvs::ValueArray<kvs::UInt8> original_colors = ply->colors();
+    // Start Apply Colormap
+    cmap.setRange( cpd->getMinValue(), cpd->getMaxValue() );
+    kvs::ValueArray<kvs::UInt8> colors( ply->numberOfVertices() * 3 );
     for ( size_t i = 0; i < ply->numberOfVertices(); i++ ) {
-        // Get viridis color
-        tinycolormap::Color color = tinycolormap::GetColor(normalized_point_densities[i], tinycolormap::ColormapType::Viridis);
+        const kvs::RGBColor color( cmap.at( point_densities[i] ) );
 
-        colors.push_back( color.r()*255 );
-        colors.push_back( color.g()*255 );
-        colors.push_back( color.b()*255 );
+        colors[ 3 * i + 0 ] = color.r();
+        colors[ 3 * i + 1 ] = color.g();
+        colors[ 3 * i + 2 ] = color.b();
     }
-    ply->setColors( kvs::ValueArray<kvs::UInt8>( colors ) );
+    ply->setColors( colors );
     // End Apply Color
 
     // Write to .spbr file
-    WritingDataType type = Ascii;
+    const WritingDataType type = Ascii;
     writeSPBR(  ply,          /* kvs::PolygonObject *_ply        */  
                 outSPBRfile,  /* char*              _filename    */  
                 type          /* WritingDataType    _type        */ );       
@@ -160,7 +185,7 @@ int main( int argc, char** argv ) {
     object->updateMinMaxCoords(); 
 
     // Exec. SPBR
-    std::string out_noised_spbr( outSPBRfile );
+    const std::string out_noised_spbr( outSPBRfile );
     std::string EXEC("spbr ");
     EXEC += out_noised_spbr;
     system( EXEC.c_str() );

@@ -1,5 +1,4 @@
-#ifndef _calcPointDensity_H__
-#define _calcPointDensity_H__
+#pragma once
 
 #include <kvs/PolygonObject>
 #include <pcl/point_cloud.h>
@@ -9,16 +8,15 @@
 class calcPointDensity {
 public:
     enum SearchType {
-        Octree = 0,
-        PCL_RadiusSearch = 1,
-        PCL_NearestKSearch = 2,
+        Octree              = 0,
+        PCL_RadiusSearch    = 1,
+        PCL_NearestKSearch  = 2
     };
 
 public:
     calcPointDensity( void );
-    calcPointDensity( kvs::PolygonObject* _ply );
 
-    void    setSearchType( const SearchType _type );
+    void    setSearchType( const SearchType _search_type );
     void    setSearchRadius( const double _distance );
     void    setSearchRadius( const double _divide_value, const kvs::Vector3f _bbmin, const kvs::Vector3f _bbmax );
     void    setNearestK( const int _k );
@@ -28,18 +26,22 @@ public:
     void    removeOutlier4PointDensities( const int _sigma_section4outlier );
     void    normalizePointDensities( void );
 
-    int     getMaxPointNum( void ) { return m_max_point_num; }
-    int     getMinPointNum( void ) { return m_min_point_num; }
-    double  getMaxAvgDistance( void ) { return m_max_avg_dist; }
-    double  getMinAvgDistance( void ) { return m_min_avg_dist; }
     std::vector<double> getPointDensities( void ) { return m_point_densities; }
+    double  getMinValue( void ) { return m_min_value; }
+    double  getMaxValue( void ) { return m_max_value; }
+    int     getMinPointNum( void ) { return m_min_point_num; }
+    int     getMaxPointNum( void ) { return m_max_point_num; }
+    double  getMinAvgDistance( void ) { return m_min_avg_dist; }
+    double  getMaxAvgDistance( void ) { return m_max_avg_dist; }
 
 private:
-    SearchType           m_type;
+    SearchType           m_search_type;
     size_t               m_number_of_points;
     std::vector<double>  m_point_densities;
     double               m_searchRadius;
     int                  m_nearestK;
+    double               m_max_value;
+    double               m_min_value;
     int                  m_max_point_num;
     int                  m_min_point_num;
     double               m_max_avg_dist;
@@ -48,5 +50,3 @@ private:
 private:
     void exec( std::vector<pcl::PointXYZ> &_point );
 };
-
-#endif

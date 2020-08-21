@@ -8,45 +8,60 @@ Visualize point density of the point cloud.
 =================================
      Visualize Point Density
          Tomomasa Uchida
-           2020/08/20
+           2020/08/21
 =================================
 
   USAGE:
-  ./vpd [input.spbr] [sigma_section_for_outlier] [output.spbr]
+  ./vpd [input.spbr] [output.spbr] [sigma_section_for_outlier] [colormap_option]
 
   EXAMPLE:
-  ./vpd input.ply 2 output.spbr
+  ./vpd input.ply output.spbr 2 -v
 
    [sigma_section_for_outlier]
     0: No Outlier
     1: 1σ < Outlier
     2: 2σ < Outlier
     3: 3σ < Outlier
+
+   [colormap_option]
+    -v: Viridis
+    -p: Plasma
+    -i: Inferno
+    -m: Magma
+    -c: Cividis
 ```
 
 ### Octree
 ```
-Set divide value. (search radius = diagonal length / divide value): 500
-> search radius: 0.0211673 (= 10.5836/500)
+PLY Min, Max Coords:
+Min : 0.0492606 0.0509949 0.103085
+Max : 0.52798 0.525888 0.474338
+Number of points: 500000
+Diagonal length of BB: 0.769756
+
+ColorMap: Viridis
+
+Set divide value. (search radius = diagonal length / divide value): 100
+> search radius: 0.00769756 (= 0.769756/100)
 
 Now Octree Searching... 
-10000000, 408 (points)
-20000000, 261 (points)
-Done Octree Search! (10.421 [minute])
+Done Octree Search! (0.0599382 [minute])
 
-Max num of neighborhood points: 2272
-Min num of neighborhood points: 1
-Average: 375.53
-Standard Deviation: 300.97
+Min value: 15
+Max value: 509
+Average: 194.06
+Standard Deviation: 64.1714
 
 Removed outliers for point density vector.
-New max num of points: 977
+New max value: 386
 
 Normalized point density vector.
-Max num of points: 1
+Updated min and max value.
+Min value: 0
+Max value: 1
 
 Writing spbr file (SPBR_DATA/test.spbr)...
-Done writing spbr file! (0.868 [minute])
+Done writing spbr file! (0.0190659 [minute])
 ```
 
 ### PCL_RadiusSearch
@@ -101,6 +116,10 @@ Min point density : 0.016313
 ```
 
 ## Visualization Results
+|Viridis|Plasma|Inferno|Magma|Cividis|
+|:-:|:-:|:-:|:-:|:-:|
+|<img src="figures/ColorMap/viridis.bmp" width="1000">|<img src="figures/ColorMap/Plasma.bmp" width="1000">|<img src="figures/ColorMap/Inferno.bmp" width="1000">|<img src="figures/ColorMap/Magma.bmp" width="1000">|<img src="figures/ColorMap/Cividis.bmp" width="1000">|
+
 |L=1|L=50|L=100|
 |:-:|:-:|:-:|
 |<img src="figures/LiDAR/upper_L1.bmp" width="1000">|<img src="figures/LiDAR/upper_L50.bmp" width="1000">|<img src="figures/LiDAR/upper_L100.bmp" width="1000">|

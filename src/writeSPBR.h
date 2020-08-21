@@ -31,9 +31,10 @@ void writeSPBR( kvs::PolygonObject *_ply,
     std::ofstream fout( _filename );
     if ( _type == Ascii ) {
         fout << "#/SPBR_ASCII_Data"       << std::endl;
-        fout << "#/RepeatLevel 100"       << std::endl;
+        fout << "#/RepeatLevel 5"         << std::endl;
         fout << "#/BGColorRGBByte 0 0 0"  << std::endl;
-        fout << "#/ImageResolution 1000"  << std::endl;
+        fout << "#/ImageResolution 512"   << std::endl;
+        fout << "#/StandardBoundingBox -0.9 -0.9 -0.9 0.9 0.9 0.9" << std::endl;
         fout << "#/Shading 0"             << std::endl;
         fout << "#/EndHeader"             << std::endl;
     }

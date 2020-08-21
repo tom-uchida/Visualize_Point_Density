@@ -22,15 +22,8 @@ calcPointDensity::calcPointDensity():
     m_min_avg_dist( 1e7 )
 {}
 
-calcPointDensity::calcPointDensity( kvs::PolygonObject* _ply ):
-    m_max_point_num( -1 ),
-    m_min_point_num( 1e7 ),
-    m_max_avg_dist( -1.0f ),
-    m_min_avg_dist( 1e7 )
-{}
-
-void calcPointDensity::setSearchType( const SearchType _type ) {
-    m_type = _type;
+void calcPointDensity::setSearchType( const SearchType _search_type ) {
+    m_search_type = _search_type;
 }
 
 void calcPointDensity::setSearchRadius( const double _distance ) {
@@ -185,7 +178,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
         // RadiusSearch
         int num_of_neighborhood=0;
-        if ( m_type == PCL_RadiusSearch ) {
+        if ( m_search_type == PCL_RadiusSearch ) {
             num_of_neighborhood = kdtree.radiusSearch ( searchPoint, 
                                                         m_searchRadius,
                                                         pointIndex, 
@@ -196,7 +189,7 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
         // end RadiusSearch
 
         // NearestKSearch
-        } else if ( m_type == PCL_NearestKSearch ) {
+        } else if ( m_search_type == PCL_NearestKSearch ) {
             num_of_neighborhood = kdtree.nearestKSearch (   searchPoint,
                                                             m_nearestK,
                                                             pointIndex, 
@@ -229,20 +222,24 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
 
 void calcPointDensity::calcMinMax4PointDensities() {
 
-    if ( m_type == Octree || m_type == PCL_RadiusSearch ) {
-        m_max_point_num = *std::max_element( m_point_densities.begin(), m_point_densities.end() );
+    if ( m_search_type == Octree || m_search_type == PCL_RadiusSearch ) {
         m_min_point_num = *std::min_element( m_point_densities.begin(), m_point_densities.end() );
-        std::cout << "\n";
-        std::cout << "Max num of neighborhood points: " << m_max_point_num << std::endl;
-        std::cout << "Min num of neighborhood points: " << m_min_point_num << std::endl;
+        m_max_point_num = *std::max_element( m_point_densities.begin(), m_point_densities.end() );
 
-    } else if ( m_type == PCL_NearestKSearch ) {
-        m_max_avg_dist = *std::max_element( m_point_densities.begin(), m_point_densities.end() );
+        m_min_value = (double)m_min_point_num;
+        m_max_value = (double)m_max_point_num;
+
+    } else if ( m_search_type == PCL_NearestKSearch ) {
         m_min_avg_dist = *std::min_element( m_point_densities.begin(), m_point_densities.end() );
-        std::cout << "\n";
-        std::cout << "Max avg distance: " << m_max_avg_dist << std::endl;
-        std::cout << "Min avg distance: " << m_min_avg_dist << std::endl;
+        m_max_avg_dist = *std::max_element( m_point_densities.begin(), m_point_densities.end() );
+
+        m_min_value = m_min_avg_dist;
+        m_max_value = m_max_avg_dist;
     }
+
+    std::cout << "\n";
+    std::cout << "Min value: " << m_min_value << std::endl;
+    std::cout << "Max value: " << m_max_value << std::endl;
 
 } // End calcMaxMin4PointDensities()
 
@@ -281,14 +278,16 @@ void calcPointDensity::removeOutlier4PointDensities( const int _sigma_section4ou
         } // end for
 
         // Update max point density
-        if ( m_type == Octree || m_type == PCL_RadiusSearch ) {
+        if ( m_search_type == Octree || m_search_type == PCL_RadiusSearch ) {
             m_max_point_num = threshold4outlier;
+            m_max_value = m_max_point_num;
             std::cout << "\n";
             std::cout << "Removed outliers for point density vector." << std::endl;
-            std::cout << "New max num of points: " << m_max_point_num << std::endl;
+            std::cout << "New max value: " << m_max_point_num << std::endl;
         
-        } else if ( m_type == PCL_NearestKSearch ) {
+        } else if ( m_search_type == PCL_NearestKSearch ) {
             m_max_avg_dist = threshold4outlier;
+            m_max_value = m_max_avg_dist;
         } // end if
 
     }// end if
@@ -310,10 +309,11 @@ void calcPointDensity::normalizePointDensities() {
         fout_before << m_point_densities[i] << std::endl;
 #endif
         // Normalize
-        if ( m_type == Octree || m_type == PCL_RadiusSearch ) {
-            m_point_densities[i] /= m_max_point_num;
+        if ( m_search_type == Octree || m_search_type == PCL_RadiusSearch ) {
+            m_point_densities[i] -= m_min_value;
+            m_point_densities[i] /= (m_max_value - m_min_value);
 
-        } else if ( m_type == PCL_NearestKSearch ) {
+        } else if ( m_search_type == PCL_NearestKSearch ) {
             m_point_densities[i] /= m_max_avg_dist;
         }
 
@@ -328,6 +328,9 @@ void calcPointDensity::normalizePointDensities() {
 
     std::cout << "\n";
     std::cout << "Normalized point density vector." << std::endl;
-    double max_point_num = *std::max_element( m_point_densities.begin(), m_point_densities.end() );
-    std::cout << "Max num of points: " << max_point_num << std::endl;
+    std::cout << "Updated min and max value." << std::endl;
+    m_min_value = *std::min_element( m_point_densities.begin(), m_point_densities.end() );
+    m_max_value = *std::max_element( m_point_densities.begin(), m_point_densities.end() );
+    std::cout << "Min value: " << m_min_value << std::endl;
+    std::cout << "Max value: " << m_max_value << std::endl;
 } // End normalizePointDencity()
