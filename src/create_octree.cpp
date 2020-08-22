@@ -4,136 +4,137 @@
 #include "create_octree.h"
 #include "vec_ops.h"
 
-void create_octree( octreeNode *_node, float _points[], int _nMin,
+void create_octree( octreeNode *_node, float _points[], int _nMinNode,
                     double _xMin, double _xMax, 
                     double _yMin, double _yMax,
                     double _zMin, double _zMax  ) {
     // Assign points in the node to its children
-    size_t i, j, k, ip, nPoints, idx;
+    size_t i, j, k, i_point, nPoints, idx;
 
     nPoints = _node->pIdx.size();
 
-    if ( nPoints > _nMin ) {
-        // Create each cell
+    if ( nPoints > _nMinNode ) {
+        // Create 8 cells
         for ( i = 0; i < 2; i++ ) {
             for ( j = 0; j < 2; j++ ) {
                 for ( k = 0; k < 2; k++ ) {
-                    _node->cOctreeNode[i][j][k] = new octreeNode;
-                    _node->cOctreeNode[i][j][k]->pIdx.clear();
+                    _node->childOctreeNode[i][j][k] = new octreeNode;
+                    _node->childOctreeNode[i][j][k]->pIdx.clear();
                 }
             }
         } // end for
 
-        _node->c[0] = (_xMin + _xMax) * 0.5;
-        _node->c[1] = (_yMin + _yMax) * 0.5;
-        _node->c[2] = (_zMin + _zMax) * 0.5;
+        // Calculate center coordinates of the 3D space range
+        _node->centerCoords[0] = ( _xMin + _xMax ) * 0.5;
+        _node->centerCoords[1] = ( _yMin + _yMax ) * 0.5;
+        _node->centerCoords[2] = ( _zMin + _zMax ) * 0.5;
 
-        // Assign points into children
-        for ( ip = 0; ip < nPoints; ip++ ) {
-            idx = _node->pIdx[ip] * 3;
-            i = ( (_points[idx] < _node->c[0]) ? 0: 1 );
-            j = ( (_points[idx + 1] < _node->c[1]) ? 0: 1 );
-            k = ( (_points[idx + 2] < _node->c[2]) ? 0: 1 );
-            _node->cOctreeNode[i][j][k]->pIdx.push_back(_node->pIdx[ip]);
+        // Assign all points into children
+        for ( i_point = 0; i_point < nPoints; i_point++ ) {
+            idx = _node->pIdx[i_point] * 3;
+            i = ( ( _points[idx] < _node->centerCoords[0] ) ? 0: 1 );
+            j = ( ( _points[idx + 1] < _node->centerCoords[1] ) ? 0: 1 );
+            k = ( ( _points[idx + 2] < _node->centerCoords[2] ) ? 0: 1 );
+            _node->childOctreeNode[i][j][k]->pIdx.push_back( _node->pIdx[i_point] );
         } // end for
 
         _node->pIdx.clear();
 
         // Assigh childe indices respectively
         // [0][0][0]
-        if ( _node->cOctreeNode[0][0][0]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[0][0][0];
-            _node->cOctreeNode[0][0][0] = NULL;
+        if ( _node->childOctreeNode[0][0][0]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[0][0][0];
+            _node->childOctreeNode[0][0][0] = NULL;
 
         } else {
-            create_octree(  _node->cOctreeNode[0][0][0], _points, _nMin,
-                            _xMin, _node->c[0],
-                            _yMin, _node->c[1],
-                            _zMin, _node->c[2]  );
+            create_octree(  _node->childOctreeNode[0][0][0], _points, _nMinNode,
+                            _xMin, _node->centerCoords[0],
+                            _yMin, _node->centerCoords[1],
+                            _zMin, _node->centerCoords[2]  );
         } // end if
 
         // [1][0][0]
-        if ( _node->cOctreeNode[1][0][0]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[1][0][0];
-            _node->cOctreeNode[1][0][0] = NULL;
+        if ( _node->childOctreeNode[1][0][0]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[1][0][0];
+            _node->childOctreeNode[1][0][0] = NULL;
 
         } else {
-            create_octree(  _node->cOctreeNode[1][0][0], _points, _nMin,
-                            _node->c[0], _xMax,
-                            _yMin, _node->c[1],
-                            _zMin, _node->c[2]  );
+            create_octree(  _node->childOctreeNode[1][0][0], _points, _nMinNode,
+                            _node->centerCoords[0], _xMax,
+                            _yMin, _node->centerCoords[1],
+                            _zMin, _node->centerCoords[2]  );
         } // end if 
 
         // [0][1][0]
-        if ( _node->cOctreeNode[0][1][0]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[0][1][0];
-            _node->cOctreeNode[0][1][0] = NULL;
+        if ( _node->childOctreeNode[0][1][0]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[0][1][0];
+            _node->childOctreeNode[0][1][0] = NULL;
 
         } else {
-            create_octree(  _node->cOctreeNode[0][1][0], _points, _nMin,
-                            _xMin, _node->c[0],
-                            _node->c[1], _yMax,
-                            _zMin, _node->c[2]  );
+            create_octree(  _node->childOctreeNode[0][1][0], _points, _nMinNode,
+                            _xMin, _node->centerCoords[0],
+                            _node->centerCoords[1], _yMax,
+                            _zMin, _node->centerCoords[2]  );
         } // end if
 
         // [1][1][0]
-        if ( _node->cOctreeNode[1][1][0]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[1][1][0];
-            _node->cOctreeNode[1][1][0] = NULL;
+        if ( _node->childOctreeNode[1][1][0]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[1][1][0];
+            _node->childOctreeNode[1][1][0] = NULL;
         
         } else {
-            create_octree(  _node->cOctreeNode[1][1][0], _points, _nMin,
-                            _node->c[0], _xMax,
-                            _node->c[1], _yMax,
-                            _zMin, _node->c[2]  );
+            create_octree(  _node->childOctreeNode[1][1][0], _points, _nMinNode,
+                            _node->centerCoords[0], _xMax,
+                            _node->centerCoords[1], _yMax,
+                            _zMin, _node->centerCoords[2]  );
         } // end if
 
         // [0][0][1]
-        if ( _node->cOctreeNode[0][0][1]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[0][0][1];
-            _node->cOctreeNode[0][0][1] = NULL;
+        if ( _node->childOctreeNode[0][0][1]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[0][0][1];
+            _node->childOctreeNode[0][0][1] = NULL;
         
         } else {
-            create_octree(  _node->cOctreeNode[0][0][1], _points, _nMin,
-                            _xMin, _node->c[0],
-                            _yMin, _node->c[1],
-                            _node->c[2], _zMax  );
+            create_octree(  _node->childOctreeNode[0][0][1], _points, _nMinNode,
+                            _xMin, _node->centerCoords[0],
+                            _yMin, _node->centerCoords[1],
+                            _node->centerCoords[2], _zMax  );
         } // end if
 
         // [1][0][1]
-        if ( _node->cOctreeNode[1][0][1]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[1][0][1];
-            _node->cOctreeNode[1][0][1] = NULL;
+        if ( _node->childOctreeNode[1][0][1]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[1][0][1];
+            _node->childOctreeNode[1][0][1] = NULL;
 
         } else {
-            create_octree(  _node->cOctreeNode[1][0][1], _points, _nMin,
-                            _node->c[0], _xMax,
-                            _yMin, _node->c[1],
-                            _node->c[2], _zMax  );
+            create_octree(  _node->childOctreeNode[1][0][1], _points, _nMinNode,
+                            _node->centerCoords[0], _xMax,
+                            _yMin, _node->centerCoords[1],
+                            _node->centerCoords[2], _zMax  );
         } // end if
 
         // [0][1][1]
-        if ( _node->cOctreeNode[0][1][1]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[0][1][1];
-            _node->cOctreeNode[0][1][1] = NULL;
+        if ( _node->childOctreeNode[0][1][1]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[0][1][1];
+            _node->childOctreeNode[0][1][1] = NULL;
         
         } else {
-            create_octree(  _node->cOctreeNode[0][1][1], _points, _nMin,
-                            _xMin, _node->c[0],
-                            _node->c[1], _yMax,
-                            _node->c[2], _zMax  );
+            create_octree(  _node->childOctreeNode[0][1][1], _points, _nMinNode,
+                            _xMin, _node->centerCoords[0],
+                            _node->centerCoords[1], _yMax,
+                            _node->centerCoords[2], _zMax  );
         } // end if
 
         // [1][1][1]
-        if ( _node->cOctreeNode[1][1][1]->pIdx.size() == 0 ) {
-            delete _node->cOctreeNode[1][1][1];
-            _node->cOctreeNode[1][1][1] = NULL;
+        if ( _node->childOctreeNode[1][1][1]->pIdx.size() == 0 ) {
+            delete _node->childOctreeNode[1][1][1];
+            _node->childOctreeNode[1][1][1] = NULL;
         
         } else {
-            create_octree(  _node->cOctreeNode[1][1][1], _points, _nMin,
-                            _node->c[0], _xMax,
-                            _node->c[1], _yMax,
-                            _node->c[2], _zMax  );
+            create_octree(  _node->childOctreeNode[1][1][1], _points, _nMinNode,
+                            _node->centerCoords[0], _xMax,
+                            _node->centerCoords[1], _yMax,
+                            _node->centerCoords[2], _zMax  );
         } // end if
 
     } else {
@@ -142,7 +143,7 @@ void create_octree( octreeNode *_node, float _points[], int _nMin,
         for ( i = 0; i < 2; i++ ) {
             for ( j = 0; j < 2; j++ ) {
                 for ( k = 0; k < 2; k++ ) {
-                    _node->cOctreeNode[i][j][k] = NULL;
+                    _node->childOctreeNode[i][j][k] = NULL;
                 }
             }
         } // end for
@@ -163,28 +164,28 @@ void search_node(   double p[], double R2, octreeNode *node, float points[],
     if ( node->pIdx.size() == 0 ) {
 
         // If node has children
-        if ( xleft <= node->c[0] ) {
+        if ( xleft <= node->centerCoords[0] ) {
             
             // Search [0][?][?]
-            if ( yleft <= node->c[1] ) {
+            if ( yleft <= node->centerCoords[1] ) {
 
                 // Search [0][0][?]
-                if ( zleft <= node->c[2] ) {
+                if ( zleft <= node->centerCoords[2] ) {
 
                     // Search [0][0][0]
-                    if ( node->cOctreeNode[0][0][0] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[0][0][0], points,
+                    if ( node->childOctreeNode[0][0][0] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[0][0][0], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }
 
                 } // end if
 
-                if ( zright >= node->c[2] ) {
+                if ( zright >= node->centerCoords[2] ) {
 
 	                // Search [0][0][1]
-                    if ( node->cOctreeNode[0][0][1] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[0][0][1], points,
+                    if ( node->childOctreeNode[0][0][1] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[0][0][1], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }
@@ -193,25 +194,25 @@ void search_node(   double p[], double R2, octreeNode *node, float points[],
 
             } // end if
 
-            if ( yright >= node->c[1] ) {
+            if ( yright >= node->centerCoords[1] ) {
                 
                 // Search [0][1][?]
-                if ( zleft <= node->c[2] ) {
+                if ( zleft <= node->centerCoords[2] ) {
                     
                     // Search [0][1][0]
-                    if ( node->cOctreeNode[0][1][0] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[0][1][0], points,
+                    if ( node->childOctreeNode[0][1][0] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[0][1][0], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }
 
                 } // end if
 
-                if ( zright >= node->c[2] ) {
+                if ( zright >= node->centerCoords[2] ) {
                     
                     // Search [0][1][1]
-                    if ( node->cOctreeNode[0][1][1] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[0][1][1], points,
+                    if ( node->childOctreeNode[0][1][1] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[0][1][1], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }
@@ -222,28 +223,28 @@ void search_node(   double p[], double R2, octreeNode *node, float points[],
 
         } // end if
 
-        if ( xright >= node->c[0] ) {
+        if ( xright >= node->centerCoords[0] ) {
             
             // Search [1][?][?]
-            if ( yleft <= node->c[1] ) {
+            if ( yleft <= node->centerCoords[1] ) {
                 
                 // Search [1][0][?]
-                if ( zleft <= node->c[2] ) {
+                if ( zleft <= node->centerCoords[2] ) {
                     
                     // Search [1][0][0]
-                    if ( node->cOctreeNode[1][0][0] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[1][0][0], points,
+                    if ( node->childOctreeNode[1][0][0] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[1][0][0], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }
                 
                 } // end if
 
-                if ( zright >= node->c[2] ) {
+                if ( zright >= node->centerCoords[2] ) {
                     
                     // Search [1][0][1]
-                    if ( node->cOctreeNode[1][0][1] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[1][0][1], points,
+                    if ( node->childOctreeNode[1][0][1] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[1][0][1], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }
@@ -252,25 +253,25 @@ void search_node(   double p[], double R2, octreeNode *node, float points[],
 
             } // end if
 
-            if ( yright >= node->c[1] ) {
+            if ( yright >= node->centerCoords[1] ) {
                 
                 // Search [1][1][?]
-                if ( zleft <= node->c[2] ) {
+                if ( zleft <= node->centerCoords[2] ) {
                     
                     // Search [1][1][0]
-                    if ( node->cOctreeNode[1][1][0] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[1][1][0], points,
+                    if ( node->childOctreeNode[1][1][0] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[1][1][0], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }
 
                 } // end if
 
-                if ( zright >= node->c[2] ) {
+                if ( zright >= node->centerCoords[2] ) {
                     
                     // Search [1][1][1]
-                    if ( node->cOctreeNode[1][1][1] != NULL ) {
-                        search_node(    p, R2, node->cOctreeNode[1][1][1], points,
+                    if ( node->childOctreeNode[1][1][1] != NULL ) {
+                        search_node(    p, R2, node->childOctreeNode[1][1][1], points,
                                         xleft, xright, yleft, yright, zleft, zright,
                                         nearIdxPtr, dist    );
                     }

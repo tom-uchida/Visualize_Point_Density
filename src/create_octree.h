@@ -4,11 +4,11 @@
 
 struct octreeNode {
     std::vector<size_t> pIdx;
-    double c[3];
-    octreeNode *cOctreeNode[2][2][2];
+    double centerCoords[3];
+    octreeNode *childOctreeNode[2][2][2];
 };
 
-void create_octree( octreeNode *_node, float _points[], int _nMin,
+void create_octree( octreeNode *_node, float _points[], int _nMinNode,
                     double _xMin, double _xMax, double _yMin, double _yMax,
                     double _zMin, double _zMax);
 
