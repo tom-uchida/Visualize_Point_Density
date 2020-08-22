@@ -57,14 +57,17 @@ void calcPointDensity::calcWithOctree( const kvs::PolygonObject* _ply ) {
     rangeBB[4] = (double)minBB.z();
     rangeBB[5] = (double)maxBB.z();
 
-    // Create octree
-    octree *myTree = new octree(    points,             /* float _points[] */
-                                    m_number_of_points, /* size_t _nPoints */
-                                    rangeBB,            /* double _range[] */
-                                    MIN_NODE            /* int _nMinNode */ );
-
+    // Create Octree
     std::cout << "\n";
-    std::cout << "Now Octree Searching... " << std::endl;
+    std::cout << "Now Creating Octree..." << std::endl;
+    octree *myTree = new octree(    points,             /* float    _points[]   */
+                                    m_number_of_points, /* size_t   _nPoints    */
+                                    rangeBB,            /* double   _range[]    */
+                                    MIN_NODE            /* int      _nMinNode   */  );
+
+    // Octree Search
+    std::cout << "\n";
+    std::cout << "Now Octree Searching..." << std::endl;
     clock_t start = clock(); // Start time count
     for ( size_t i = 0; i < m_number_of_points; i++ ) {
         if ( i == m_number_of_points ) --i;
@@ -76,12 +79,12 @@ void calcPointDensity::calcWithOctree( const kvs::PolygonObject* _ply ) {
         // Search neighborhood points
         std::vector<size_t> neighborhoodIdx;
         std::vector<double> dist;
-        search_points(  point,              /* double p[] */
-                        m_searchRadius,     /* double R */
-                        points,             /* float points[] */
-                        myTree->octreeRoot, /* octreeNode *Node */
-                        &neighborhoodIdx,   /* std::vector<size_t> *nearIndPtr */
-                        &dist               /* std::vector<double> *dist */ );
+        search_points(  myTree->octreeRoot, /* octreeNode           *_node          */
+                        points,             /* float                _points[]       */
+                        m_searchRadius,     /* double               _searchRadius   */
+                        point,              /* double               _point[]        */
+                        &neighborhoodIdx,   /* std::vector<size_t>  *_nearIndPtr    */
+                        &dist               /* std::vector<double>  *_dist          */  );
         int num_of_neighborhood_points = (int)neighborhoodIdx.size();
 
         // for ( size_t j = 0; j < num_of_neighborhood_points; j++ ) {
