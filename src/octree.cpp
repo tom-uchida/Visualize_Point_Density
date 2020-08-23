@@ -1,6 +1,7 @@
+#include <iostream>
 #include "octree.h"
 
-octree::octree( float _points[], size_t _nPoints, double _range[], int _nMinNode )
+octree::octree( float _points[], const size_t _nPoints, double _range[], const int _nMinNode )
 {
     octreeRoot = new octreeNode;
 
@@ -13,4 +14,5 @@ octree::octree( float _points[], size_t _nPoints, double _range[], int _nMinNode
                     _range[0],  _range[1],
                     _range[2],  _range[3],
                     _range[4],  _range[5] );
+
 }

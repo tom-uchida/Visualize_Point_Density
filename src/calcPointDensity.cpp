@@ -12,9 +12,6 @@
 
 // #define CREATE_HISTOGRAM
 
-const int INTERVAL_POINTS = 5e6;
-const int MIN_NODE = 15;
-
 calcPointDensity::calcPointDensity():
     m_max_point_num( -1 ),
     m_min_point_num( 1e7 ),
@@ -72,16 +69,16 @@ void calcPointDensity::calcWithOctree( const kvs::PolygonObject* _ply ) {
     for ( size_t i = 0; i < m_number_of_points; i++ ) {
         if ( i == m_number_of_points ) --i;
 
-        double point[3] = { coords[3 * i],
-                            coords[3 * i + 1],
-                            coords[3 * i + 2] };
+        double point[3] = { coords[ 3 * i ],
+                            coords[ 3 * i + 1 ],
+                            coords[ 3 * i + 2 ] };
 
         // Search neighborhood points
         std::vector<size_t> neighborhoodIdx;
         std::vector<double> dist;
         search_points(  myTree->octreeRoot, /* octreeNode           *_node          */
                         points,             /* float                _points[]       */
-                        m_searchRadius,     /* double               _searchRadius   */
+                        m_searchRadius,     /* const double         _searchRadius   */
                         point,              /* double               _point[]        */
                         &neighborhoodIdx,   /* std::vector<size_t>  *_nearIndPtr    */
                         &dist               /* std::vector<double>  *_dist          */  );
@@ -97,7 +94,7 @@ void calcPointDensity::calcWithOctree( const kvs::PolygonObject* _ply ) {
         m_point_densities.push_back( num_of_neighborhood_points );
 
         // Display progress
-        if ( !((i + 1) % INTERVAL_POINTS) )
+        if ( !( (i + 1) % INTERVAL ) )
             std::cout << i + 1 << ", " << num_of_neighborhood_points << " (points)\n";
     } // end for
 
@@ -285,7 +282,7 @@ void calcPointDensity::removeOutlier4PointDensities( const int _sigma_section4ou
             m_max_point_num = threshold4outlier;
             m_max_value = m_max_point_num;
             std::cout << "\n";
-            std::cout << "Removed outliers for point density vector." << std::endl;
+            std::cout << "Removed outliers from point density vector." << std::endl;
             std::cout << "New max value: " << m_max_point_num << std::endl;
         
         } else if ( m_search_type == PCL_NearestKSearch ) {

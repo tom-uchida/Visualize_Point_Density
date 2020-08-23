@@ -4,16 +4,15 @@
 #include "create_octree.h"
 #include "vec_ops.h"
 
-void create_octree( octreeNode *_node,
-                    float _points[],    int _nMinNode,
-                    double _xMin,       double _xMax, 
-                    double _yMin,       double _yMax,
-                    double _zMin,       double _zMax  ) {
-    // Assign _points in the _node to its children
+void create_octree( octreeNode *_node, float _points[], const int _nMinNode,
+                    const double _xMin, const double _xMax, 
+                    const double _yMin, const double _yMax,
+                    const double _zMin, const double _zMax  ) {
+
     size_t i, j, k, i_point, nPoints, idx;
 
+    // Assign _points in the _node to its children
     nPoints = _node->pointIdx.size();
-
     if ( nPoints > _nMinNode ) {
 
         // Create 8 cells
@@ -41,11 +40,11 @@ void create_octree( octreeNode *_node,
             j = ( _points[idx + 1] < _node->centerCoords[1] ) ? 0 : 1; // y
             k = ( _points[idx + 2] < _node->centerCoords[2] ) ? 0 : 1; // z
 
-            // Add into child octree _node
+            // Add into child octree node
             _node->childOctreeNode[i][j][k]->pointIdx.push_back( _node->pointIdx[i_point] );
         } // end for
 
-        // Clear index-vector because it has been assigned
+        // Clear point-index-vector because the point assignment has been completed.
         _node->pointIdx.clear();
 
 
@@ -159,17 +158,24 @@ void create_octree( octreeNode *_node,
 
     } // end if
 
+    // Display
+    static int nCount = 0;
+    nCount++;
+    if ( !( nCount % INTERVAL ) )
+        std::cout << nCount << "\n";
+
 } // End create_octree()
 
 
-void search_node(   octreeNode *_node, float _points[], double _point[],
+void search_node(   const octreeNode *_node, const float _points[], double _point[],
                     std::vector<size_t> *_nearIdxPtr, std::vector<double> *_dist,
-                    double _xLeft, double _xRight,
-                    double _yLeft, double _yRight,
-                    double _zLeft, double _zRight,
-                    double _R2  ) {
+                    const double _xLeft, const double _xRight,
+                    const double _yLeft, const double _yRight,
+                    const double _zLeft, const double _zRight,
+                    const double _R2  ) {
 
-    if ( _node->pointIdx.size() == 0 ) {
+    size_t nPoints = _node->pointIdx.size();
+    if ( nPoints == 0 ) {
 
         // If node has children
         if ( _xLeft <= _node->centerCoords[0] ) {
@@ -190,7 +196,7 @@ void search_node(   octreeNode *_node, float _points[], double _point[],
                                         _R2  );
                     }
 
-                } // end if
+                } // end if ( _node->childOctreeNode[0][0][0] != NULL ) {
 
                 if ( _zRight >= _node->centerCoords[2] ) {
 
@@ -204,9 +210,9 @@ void search_node(   octreeNode *_node, float _points[], double _point[],
                                         _R2  );
                     }
                 
-                } // end if
+                } // end if ( _zRight >= _node->centerCoords[2] ) {
 
-            } // end if
+            } // end if ( _yLeft <= _node->centerCoords[1] ) {
 
             if ( _yRight >= _node->centerCoords[1] ) {
                 
@@ -241,7 +247,7 @@ void search_node(   octreeNode *_node, float _points[], double _point[],
 
             } // end if
 
-        } // end if
+        } // end if ( _xLeft <= _node->centerCoords[0] ) {
 
         if ( _xRight >= _node->centerCoords[0] ) {
             
@@ -312,18 +318,16 @@ void search_node(   octreeNode *_node, float _points[], double _point[],
 
             } // end if
 
-        } // end if
+        } // end if ( _xRight >= _node->centerCoords[0] ) {
     
-    } else {
+    } else { // if ( _node->pointIdx.size() == 0 ) {
 
         // If _node is a leaf
-        size_t nPoints = _node->pointIdx.size();
-
         for ( size_t i = 0; i < nPoints; i++ ) {
             double point[3] = { (double)_points[ _node->pointIdx[i] * 3 ],      
                                 (double)_points[ _node->pointIdx[i] * 3 + 1 ],  
                                 (double)_points[ _node->pointIdx[i] * 3 + 2 ]   };
-            double dist = dist2( _point, point );
+            const double dist = dist2( _point, point );
 
             if ( dist < _R2 ) {
                 //if ( dist2( _point, &( _points[ _node->pointIdx[i] * 3 ]) ) < _R2 ) {
@@ -338,17 +342,17 @@ void search_node(   octreeNode *_node, float _points[], double _point[],
 
 
 void search_points( octreeNode *_node, float _points[],
-                    double _searchRadius, double _point[],
+                    const double _searchRadius, double _point[],
                     std::vector<size_t> *_nearIdxPtr,
                     std::vector<double> *_dist   ) {
 
-    double xLeft   = _point[0] - _searchRadius;
-    double xRight  = _point[0] + _searchRadius;
-    double yLeft   = _point[1] - _searchRadius;
-    double yRight  = _point[1] + _searchRadius;
-    double zLeft   = _point[2] - _searchRadius;
-    double zRight  = _point[2] + _searchRadius;
-    double R2      = _searchRadius * _searchRadius;
+    const double xLeft   = _point[0] - _searchRadius;
+    const double xRight  = _point[0] + _searchRadius;
+    const double yLeft   = _point[1] - _searchRadius;
+    const double yRight  = _point[1] + _searchRadius;
+    const double zLeft   = _point[2] - _searchRadius;
+    const double zRight  = _point[2] + _searchRadius;
+    const double R2      = _searchRadius * _searchRadius;
 
     search_node(    _node,  _points, _point, 
                     _nearIdxPtr, _dist,
