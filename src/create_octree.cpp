@@ -196,7 +196,7 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
 
-                } // end if ( _node->childOctreeNode[0][0][0] != NULL ) {
+                } // end if _zLeft
 
                 if ( _zRight >= _node->centerCoords[2] ) {
 
@@ -210,9 +210,9 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
                 
-                } // end if ( _zRight >= _node->centerCoords[2] ) {
+                } // end if _zRight
 
-            } // end if ( _yLeft <= _node->centerCoords[1] ) {
+            } // end if _yLeft
 
             if ( _yRight >= _node->centerCoords[1] ) {
                 
@@ -229,7 +229,7 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
 
-                } // end if
+                } // end if _zLeft
 
                 if ( _zRight >= _node->centerCoords[2] ) {
                     
@@ -243,11 +243,11 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
 
-                } // end if
+                } // end if _zRight
 
-            } // end if
+            } // end if _yRight
 
-        } // end if ( _xLeft <= _node->centerCoords[0] ) {
+        } // end if _xLeft
 
         if ( _xRight >= _node->centerCoords[0] ) {
             
@@ -267,7 +267,7 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
                 
-                } // end if
+                } // end if _zLeft
 
                 if ( _zRight >= _node->centerCoords[2] ) {
                     
@@ -281,9 +281,9 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
 
-                } // end if
+                } // end if _zRight
 
-            } // end if
+            } // end if _yLeft
 
             if ( _yRight >= _node->centerCoords[1] ) {
                 
@@ -300,7 +300,7 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
 
-                } // end if
+                } // end if _zLeft
 
                 if ( _zRight >= _node->centerCoords[2] ) {
                     
@@ -314,26 +314,30 @@ void search_node(   const octreeNode *_node, const float _points[], double _poin
                                         _R2  );
                     }
 
-                } // end if
+                } // end if _zRight
 
-            } // end if
+            } // end if _yRight
 
-        } // end if ( _xRight >= _node->centerCoords[0] ) {
+        } // end if _xRight
     
-    } else { // if ( _node->pointIdx.size() == 0 ) {
+    } else { // if ( nPoints == 0 ) {
 
-        // If _node is a leaf
+        // If node is a leaf
         for ( size_t i = 0; i < nPoints; i++ ) {
+
+            // Calculate the square of the distance to each point
             double point[3] = { (double)_points[ _node->pointIdx[i] * 3 ],      
                                 (double)_points[ _node->pointIdx[i] * 3 + 1 ],  
                                 (double)_points[ _node->pointIdx[i] * 3 + 2 ]   };
             const double dist = dist2( _point, point );
 
+            // If the target point is within the counting sphere with the search radius, save an index of the point.
             if ( dist < _R2 ) {
                 //if ( dist2( _point, &( _points[ _node->pointIdx[i] * 3 ]) ) < _R2 ) {
                 _nearIdxPtr->push_back( _node->pointIdx[i] );
                 _dist->push_back( sqrt( dist ) );
-            } 
+            }
+            
         } // end for
 
     } // end if
