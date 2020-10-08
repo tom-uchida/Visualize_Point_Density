@@ -2,7 +2,7 @@
 
 #include <vector>
 
-const int INTERVAL = 1e5;
+const int INTERVAL = 1e6;
 
 struct octreeNode {
     std::vector<size_t> pointIdx;

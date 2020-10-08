@@ -16,10 +16,10 @@ public:
 public:
     calcPointDensity( void );
 
-    void    setSearchType( const SearchType _search_type );
-    void    setSearchRadius( const double _distance );
+    void    setSearchType( const SearchType _search_type ) { m_search_type = _search_type; }
+    void    setSearchRadius( const double _distance ) { m_searchRadius = _distance; }
     void    setSearchRadius( const double _divide_value, const kvs::Vector3f _bbmin, const kvs::Vector3f _bbmax );
-    void    setNearestK( const int _k );
+    void    setNearestK( const int _k ) { m_nearestK = _k; }
     void    calcWithOctree( const kvs::PolygonObject* _ply );
     void    calcWithPCL( const kvs::PolygonObject* _ply );
     void    calcMinMax4PointDensities( void );
@@ -27,12 +27,12 @@ public:
     void    normalizePointDensities( void );
 
     std::vector<double> getPointDensities( void ) { return m_point_densities; }
-    double  getMinValue( void ) { return m_min_value; }
-    double  getMaxValue( void ) { return m_max_value; }
-    int     getMinPointNum( void ) { return m_min_point_num; }
-    int     getMaxPointNum( void ) { return m_max_point_num; }
-    double  getMinAvgDistance( void ) { return m_min_avg_dist; }
-    double  getMaxAvgDistance( void ) { return m_max_avg_dist; }
+    double  getMinValue( void ) const { return m_min_value; }
+    double  getMaxValue( void ) const { return m_max_value; }
+    int     getMinPointNum( void ) const { return m_min_point_num; }
+    int     getMaxPointNum( void ) const { return m_max_point_num; }
+    double  getMinAvgDistance( void ) const { return m_min_avg_dist; }
+    double  getMaxAvgDistance( void ) const { return m_max_avg_dist; }
 
 private:
     SearchType           m_search_type;

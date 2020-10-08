@@ -159,10 +159,10 @@ void create_octree( octreeNode *_node, float _points[], const int _nMinNode,
     } // end if
 
     // Display
-    static int nCount = 0;
-    nCount++;
-    if ( !( nCount % INTERVAL ) )
-        std::cout << nCount << "\n";
+    // static int nCount = 0;
+    // nCount++;
+    // if ( !( nCount % INTERVAL ) )
+    //     std::cout << nCount << "\n";
 
 } // End create_octree()
 

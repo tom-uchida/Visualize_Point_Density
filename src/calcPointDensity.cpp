@@ -17,14 +17,8 @@ calcPointDensity::calcPointDensity():
     m_min_point_num( 1e7 ),
     m_max_avg_dist( -1.0f ),
     m_min_avg_dist( 1e7 )
-{}
+{
 
-void calcPointDensity::setSearchType( const SearchType _search_type ) {
-    m_search_type = _search_type;
-}
-
-void calcPointDensity::setSearchRadius( const double _distance ) {
-    m_searchRadius = _distance;
 }
 
 void calcPointDensity::setSearchRadius( const double _divide_value, const kvs::Vector3f _bbmin, const kvs::Vector3f _bbmax ) {
@@ -33,10 +27,6 @@ void calcPointDensity::setSearchRadius( const double _divide_value, const kvs::V
 
     std::cout << "> search radius: " << m_searchRadius;
     std::cout << " (= " << bb.length() << "/" << _divide_value << ")" << std::endl;
-}
-
-void calcPointDensity::setNearestK( const int _k ) {
-    m_nearestK = _k;
 }
 
 void calcPointDensity::calcWithOctree( const kvs::PolygonObject* _ply ) {
@@ -100,8 +90,9 @@ void calcPointDensity::calcWithOctree( const kvs::PolygonObject* _ply ) {
 
     // End time clock
     clock_t end = clock();
-    std::cout << "Done Octree Search! (" << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " [minute])" << std::endl;
-}
+    std::cout << "Done Octree Search! (" << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " [minute])\n";
+
+} // End calcWithOctree()
 
 void calcPointDensity::calcWithPCL( const kvs::PolygonObject* _ply ) {
     std::vector<pcl::PointXYZ>  points4pcl;
@@ -137,7 +128,8 @@ void calcPointDensity::calcWithPCL( const kvs::PolygonObject* _ply ) {
 
     // Calculate point density
     exec( points4pcl );
-} // End calc( kvs::PolygonObject* _ply )
+
+} // End calcWithPCL()
 
 void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
     // http://pointclouds.org/documentation/tutorials/basic_structures.php#basic-structures
@@ -218,7 +210,8 @@ void calcPointDensity::exec( std::vector<pcl::PointXYZ> &_points ) {
     // End time clock
     clock_t end = clock();
     std::cout << "Done calculating point densities! (" << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " [minute])" << std::endl;
-} // End exec( std::vector<pcl::PointXYZ> &_points )
+
+} // End exec()
 
 void calcPointDensity::calcMinMax4PointDensities() {
 
@@ -292,7 +285,7 @@ void calcPointDensity::removeOutlier4PointDensities( const int _sigma_section4ou
 
     }// end if
 
-} // End adjustPointDensity()
+} // End removeOutlier4PointDensities()
 
 void calcPointDensity::normalizePointDensities() {
 #ifdef CREATE_HISTOGRAM
