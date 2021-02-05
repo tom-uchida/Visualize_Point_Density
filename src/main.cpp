@@ -6,10 +6,10 @@
 #include <cstring> 
 #include <cstdlib>
 #include <vector>
-#include "importPointClouds.h"
-#include "calcPointDensity.h"
+#include "import_point_clouds.h"
+#include "calc_point_density.h"
 #include "colormap_option.h"
-#include "writeSPBR.h"
+#include "write_spbr.h"
 
 #include <kvs/Application> 
 #include <kvs/Screen>
@@ -20,18 +20,36 @@
 #include <kvs/Coordinate> 
 #include <kvs/ColorMap>
 
-#define OCTREE_MODE
-// #define PCL_MODE
-
 const char OUT_FILE[] = "SPBR_DATA/output_vpd.spbr";
 
-void message() {
+inline void message() {
+    std::cout << "\n";
     std::cout << "=================================" << std::endl;
     std::cout << "     Visualize Point Density"      << std::endl;
     std::cout << "         Tomomasa Uchida"          << std::endl;
-    std::cout << "           2020/08/21"             << std::endl;
+    std::cout << "           2021/02/05"             << std::endl;
     std::cout << "=================================" << std::endl;
     std::cout << "\n";
+}
+
+inline void display_usage( char* _argv0 ) {
+    std::cout   << "  USAGE:\n  "
+                << _argv0 
+                << " [input_point_cloud] [output_point_cloud.spbr] [sigma_section_for_outlier] [colormap_type]\n\n"
+                << "  EXAMPLE:\n  "
+                << _argv0 
+                << " input.ply output.spbr 0 -v\n\n"
+                << "   [sigma_section_for_outlier]\n"
+                << "    0: No Outlier\n"
+                << "    1: 1σ < Outlier\n"
+                << "    2: 2σ < Outlier\n"
+                << "    3: 3σ < Outlier\n\n"
+                << "   [colormap_type]\n"
+                << "    -v: Viridis\n"
+                << "    -p: Plasma\n"
+                << "    -i: Inferno\n"
+                << "    -m: Magma\n"
+                << "    -c: Cividis\n\n";
 }
 
 int main( int argc, char** argv ) {
@@ -40,127 +58,62 @@ int main( int argc, char** argv ) {
     message();
 
     if ( argc != 5 ) {
-        std::cout   << "  USAGE:\n  ";
-        std::cout   << argv[0] << " [input.spbr] [output.spbr] [sigma_section_for_outlier] [colormap_option]";
-        std::cout   << "\n\n  EXAMPLE:\n  ";
-        std::cout   << argv[0] << " input.ply output.spbr 2 -v"
-                    << "\n\n"
-                    << "   [sigma_section_for_outlier]\n"
-                    << "    0: No Outlier\n"
-                    << "    1: 1σ < Outlier\n"
-                    << "    2: 2σ < Outlier\n"
-                    << "    3: 3σ < Outlier\n\n"
-                    << "   [colormap_option]\n"
-                    << "    -v: Viridis\n"
-                    << "    -p: Plasma\n"
-                    << "    -i: Inferno\n"
-                    << "    -m: Magma\n"
-                    << "    -c: Cividis\n";
+        display_usage( argv[0] );
         exit(1);
     } else {
         strcpy( outSPBRfile, argv[2] );
-    }
+    } // end if
     
+    // Import the input point cloud
     ImportPointClouds *ply = new ImportPointClouds( argv[1] );
     ply->updateMinMaxCoords();
-    kvs::Vector3f bb_min = ply->minObjectCoord();
-    kvs::Vector3f bb_max = ply->maxObjectCoord();
-    kvs::Vector3f bb_dia_vec = bb_min - bb_max;
+    const kvs::Vector3f BB_min = ply->minObjectCoord();
+    const kvs::Vector3f BB_max = ply->maxObjectCoord();
+    const kvs::Vector3f BB_dia_vec = BB_min - BB_max;
     std::cout << "\n";
-    std::cout << "PLY Min, Max Coords:\n";
-    std::cout << "Min : " << bb_min << "\n";
-    std::cout << "Max : " << bb_max << "\n";
-    std::cout << "Number of points: " << ply->numberOfVertices() << "\n";
-    std::cout << "Diagonal length of BB: " << bb_dia_vec.length() << "\n\n";
-
-    // Start Calculate Point Density
-    calcPointDensity *cpd = new calcPointDensity();
+    std::cout << "Bounding Box:\n";
+    std::cout << " Min: " << BB_min << "\n";
+    std::cout << " Max: " << BB_max << "\n\n";
+    std::cout << "Number of points:\n " << ply->numberOfVertices() << "\n\n";
 
     // Set colormap type
     kvs::ColorMap cmap;
     for ( size_t i = 1; i < argc; i++ ) {
         if ( !strncmp( VIRIDIS_OPTION, argv[i], strlen( VIRIDIS_OPTION ) ) ) {
             cmap = kvs::ColorMap::Viridis( 256 );
-            std::cout << "ColorMap: Viridis\n"; i++;
-        } else if ( !strncmp( PLASMA_OPTION,    argv[i],    strlen( PLASMA_OPTION ) ) ) {
+            std::cout << "ColorMap:\n Viridis\n\n"; i++;
+        } else if ( !strncmp( PLASMA_OPTION,    argv[i], strlen( PLASMA_OPTION ) ) ) {
             cmap = kvs::ColorMap::Plasma( 256 );
-            std::cout << "ColorMap: Plasma\n";  i++;
-        } else if ( !strncmp( INFERNO_OPTION,   argv[i],    strlen( INFERNO_OPTION ) ) ) {
+            std::cout << "ColorMap:\n Plasma\n\n";  i++;
+        } else if ( !strncmp( INFERNO_OPTION,   argv[i], strlen( INFERNO_OPTION ) ) ) {
             cmap = kvs::ColorMap::Inferno( 256 );
-            std::cout << "ColorMap: Inferno\n"; i++;
-        } else if ( !strncmp( MAGMA_OPTION,     argv[i],    strlen( MAGMA_OPTION ) ) ) {
+            std::cout << "ColorMap:\n Inferno\n\n"; i++;
+        } else if ( !strncmp( MAGMA_OPTION,     argv[i], strlen( MAGMA_OPTION ) ) ) {
             cmap = kvs::ColorMap::Magma( 256 );
-            std::cout << "ColorMap: Magma\n";   i++;
-        } else if ( !strncmp( CIVIDIS_OPTION,   argv[i],    strlen( CIVIDIS_OPTION ) ) ) {
+            std::cout << "ColorMap:\n Magma\n\n";   i++;
+        } else if ( !strncmp( CIVIDIS_OPTION,   argv[i], strlen( CIVIDIS_OPTION ) ) ) {
             cmap = kvs::ColorMap::Cividis( 256 );
-            std::cout << "ColorMap: Cividis\n"; i++;
+            std::cout << "ColorMap:\n Cividis\n\n"; i++;
         } // end if
     } // end for
-
-#ifdef OCTREE_MODE
-    cpd->setSearchType( calcPointDensity::Octree );
     
-    // Set radius
-    int divide = 0;
-    std::cout << "\n";
-    std::cout << "Set divide value. ";
-    std::cout << "(search radius = diagonal length / divide value): ";
+    // Set search radius
+    std::cout << "Diagonal length of BB:\n " << BB_dia_vec.length() << "\n\n";
+    int divide = 100;
+    std::cout << "Input divide value";
+    std::cout << " ( search radius = diagonal length / divide value ): ";
     std::cin >> divide;
-    cpd->setSearchRadius( divide, bb_min, bb_max );
 
-    cpd->calcWithOctree( ply );
-#endif
-
-#ifdef PCL_MODE
-    //============================//
-    // STEP 1: Select search type //
-    //============================//
-    int search_type = -1;
-    std::cout << "\nSelect search type. ";
-    std::cout << "(0: RadiusSearch or 1: NearestKSearch): ";
-    std::cin >> search_type;
-    if ( search_type == 0 ) {
-        cpd->setSearchType( calcPointDensity::PCL_RadiusSearch );
-        std::cout << "> RadiusSearch" << std::endl;
-
-        //====================//
-        // STEP 2: Set radius //
-        //====================//
-        int divide = 0;
-        std::cout << "\n";
-        std::cout << "Set divide value. ";
-        std::cout << "(search radius = diagonal length / divide value): ";
-        std::cin >> divide;
-        cpd->setSearchRadius( divide, ply->minObjectCoord(), ply->maxObjectCoord() );
-        //std::cout << "> " << divide << std::endl;
-
-    } else if ( search_type == 1 ) {
-        cpd->setSearchType( calcPointDensity::PCL_NearestKSearch );
-        std::cout << "> NearestKSearch" << std::endl;
-
-        //=======================//
-        // STEP 2: Set nearest K //
-        //=======================//
-        int K = 0;
-        std::cout << "\nSet nearest K: ";
-        std::cin >> K;
-        cpd->setNearestK(K);
-        std::cout << "> " << K << std::endl;
-
-    } else {
-        exit(1);
-    }
-
-    cpd->calcWithPCL( ply );
-#endif
-
-    cpd->calcMinMax4PointDensities();
-    cpd->removeOutlier4PointDensities( atoi(argv[3]) );
-    cpd->normalizePointDensities();
+    // Calculate point density
+    calcPointDensity *cpd = new calcPointDensity();
+    cpd->setSearchRadius( divide, BB_dia_vec );
+    cpd->exec( ply );
+    cpd->calcMinMax();
+    cpd->removeOutlier( atoi(argv[3]) );
+    cpd->normalize();
     const std::vector<double> point_densities = cpd->getPointDensities();
-    // End Calculate Point Density
 
-    // Start Apply Colormap
+    // Apply colormap
     cmap.setRange( cpd->getMinValue(), cpd->getMaxValue() );
     kvs::ValueArray<kvs::UInt8> colors( ply->numberOfVertices() * 3 );
     for ( size_t i = 0; i < ply->numberOfVertices(); i++ ) {
@@ -171,9 +124,8 @@ int main( int argc, char** argv ) {
         colors[ 3 * i + 2 ] = color.b();
     }
     ply->setColors( colors );
-    // End Apply Color
 
-    // Write to .spbr file
+    // Write to spbr file
     const WritingDataType type = Ascii;
     writeSPBR(  ply,          /* kvs::PolygonObject *_ply        */  
                 outSPBRfile,  /* char*              _filename    */  
@@ -186,7 +138,7 @@ int main( int argc, char** argv ) {
 
     // Exec. SPBR
     const std::string out_noised_spbr( outSPBRfile );
-    std::string EXEC("spbr ");
+    std::string EXEC( "spbr " );
     EXEC += out_noised_spbr;
     system( EXEC.c_str() );
 

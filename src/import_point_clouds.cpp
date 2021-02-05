@@ -3,10 +3,10 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "importPointClouds.h"
-#include "plyRead.h"
-#include "xyzAsciiReader.h"
-#include "xyzBinaryReader.h"
+#include "import_point_clouds.h"
+#include "ply_read.h"
+#include "xyz_ascii_reader.h"
+#include "xyz_binary_reader.h"
 #include "spbr.h"
 #include "spcomment.h"
 
@@ -18,7 +18,7 @@ ImportPointClouds::ImportPointClouds( void ): m_hasFace( false ) {
 ImportPointClouds::ImportPointClouds( char *filename ): m_hasFace( false ) {
     classification( filename );
 }
-                                              
+
 int ImportPointClouds::breakWord( char* buf, std::string *str ) {                                             
     char* data;                                 
     int n = 0;                                  
