@@ -1,5 +1,7 @@
 // ==================================
 //      Visualize Point Density
+//          Tomomasa Uchida
+//            2021/02/06
 // ==================================
 
 #include <iostream>
@@ -137,9 +139,9 @@ int main( int argc, char** argv ) {
     object->updateMinMaxCoords(); 
 
     // Exec. SPBR
-    const std::string out_noised_spbr( outSPBRfile );
+    const std::string output_file( outSPBRfile );
     std::string EXEC( "spbr " );
-    EXEC += out_noised_spbr;
+    EXEC += output_file;
     system( EXEC.c_str() );
 
     return 0;
