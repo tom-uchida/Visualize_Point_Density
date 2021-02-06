@@ -3,7 +3,9 @@
 src/vpd
 src/Makefile
 src/Makefile.kvs
+src/Makefile.old
 src/*.o
 src/*.spbr
 src/*.txt
 src/SPBR_DATA/
+src/*.sh

@@ -31,7 +31,7 @@ void writeSPBR( kvs::PolygonObject *_ply,
     std::ofstream fout( _filename );
     if ( _type == Ascii ) {
         fout << "#/SPBR_ASCII_Data"       << std::endl;
-        fout << "#/RepeatLevel 5"         << std::endl;
+        fout << "#/RepeatLevel 10"        << std::endl;
         fout << "#/BGColorRGBByte 0 0 0"  << std::endl;
         fout << "#/ImageResolution 512"   << std::endl;
         fout << "#/StandardBoundingBox -0.9 -0.9 -0.9 0.9 0.9 0.9" << std::endl;
@@ -40,8 +40,9 @@ void writeSPBR( kvs::PolygonObject *_ply,
     }
 
     // Write to ouput spbr file
-    std::cout << "\nWriting spbr file (" << _filename << ")..." << std::endl;
-    clock_t start = clock(); // Start time count
+    std::cout << "\n";
+    std::cout << "Writing spbr file (" << _filename << ")..." << "\n";
+    const clock_t start = clock();
     for ( int i = 0; i < num; i++ ) {
         // coords                                               
         float x = coords[3*i];
@@ -97,11 +98,10 @@ void writeSPBR( kvs::PolygonObject *_ply,
     } // end for
 
     // End time clock
-    clock_t end = clock();
-    std::cout << "Done writing spbr file! (" << (double)(end - start) / CLOCKS_PER_SEC / 60.0 << " [minute])" << std::endl;
+    const clock_t end = clock();
+    std::cout << "Done writing spbr file! ( " << (double)(end - start) / CLOCKS_PER_SEC << " [sec] )" << std::endl;
 
     fout.close();
-}
-
+} // End writeSPBR()
 
 #endif

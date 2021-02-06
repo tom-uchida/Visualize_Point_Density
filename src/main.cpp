@@ -27,7 +27,7 @@ inline void message() {
     std::cout << "=================================" << std::endl;
     std::cout << "     Visualize Point Density"      << std::endl;
     std::cout << "         Tomomasa Uchida"          << std::endl;
-    std::cout << "           2021/02/05"             << std::endl;
+    std::cout << "           2021/02/06"             << std::endl;
     std::cout << "=================================" << std::endl;
     std::cout << "\n";
 }
@@ -35,7 +35,7 @@ inline void message() {
 inline void display_usage( char* _argv0 ) {
     std::cout   << "  USAGE:\n  "
                 << _argv0 
-                << " [input_point_cloud] [output_point_cloud.spbr] [sigma_section_for_outlier] [colormap_type]\n\n"
+                << " [input_point_cloud] [output_point_cloud] [sigma_section_for_outlier] [colormap_type]\n\n"
                 << "  EXAMPLE:\n  "
                 << _argv0 
                 << " input.ply output.spbr 0 -v\n\n"
@@ -114,7 +114,7 @@ int main( int argc, char** argv ) {
     const std::vector<double> point_densities = cpd->getPointDensities();
 
     // Apply colormap
-    cmap.setRange( cpd->getMinValue(), cpd->getMaxValue() );
+    cmap.setRange( cpd->getMinPointDensity(), cpd->getMaxPointDensity() );
     kvs::ValueArray<kvs::UInt8> colors( ply->numberOfVertices() * 3 );
     for ( size_t i = 0; i < ply->numberOfVertices(); i++ ) {
         const kvs::RGBColor color( cmap.at( point_densities[i] ) );
