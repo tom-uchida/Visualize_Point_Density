@@ -12,16 +12,14 @@ Visualize point density of the point cloud.
 =================================
 
   USAGE:
-  vpd [input_point_cloud] [output_point_cloud] [sigma_section_for_outlier] [colormap_type]
+  vpd [input_file] [output_file] [max_value_adjustment_ratio] [colormap_type]
 
   EXAMPLE:
-  vpd input.ply output.spbr 0 -v
+  vpd input.ply output.spbr 0.8 -v
 
-   [sigma_section_for_outlier]
-    0: No Outlier
-    1: 1σ < Outlier
-    2: 2σ < Outlier
-    3: 3σ < Outlier
+   [max_value_adjustment_ratio]
+    0.8: new_max_value = max_value * 0.8
+    1.0: no change.
 
    [colormap_type]
     -v: Viridis
@@ -32,6 +30,13 @@ Visualize point density of the point cloud.
 ```
 
 ## Example
+```
+$ sh config_vpd.sh
+$ make
+$ make install
+$ make test_vpd
+```
+
 ```
 Bounding Box:
  Min: 0.0492606 0.0509949 0.103085
@@ -50,23 +55,22 @@ Input divide value ( search radius = diagonal length / divide value ): 100
  search radius: 0.00769756 ( = 0.769756 / 100 )
 
 Now Octree Searching...
-Done Octree search! ( 3.52459 [sec] )
+Done Octree search! ( 3.55287 [sec] )
 
 Point density statistics:
  Min: 15
  Max: 509
- Avg: 194.073
- Std: 64.1851
 
-Outliers were removed:
- Threshold: 386
+Max value was adjusted:
+ Min: 15
+ Max: 407
 
-Point densities were normalized:
- Min: 0
- Max: 1
+Point density was normalized:
+ Min: 0.036855
+ Max: 1.00049
 
 Writing spbr file (./out_viridis.spbr)...
-Done writing spbr file! ( 1.19775 [sec] )
+Done writing spbr file! ( 1.15244 [sec] )
 ```
 
 ## Visualization Results

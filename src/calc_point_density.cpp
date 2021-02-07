@@ -143,15 +143,33 @@ void calcPointDensity::removeOutlier( const int _sigma_section4outlier ) {
 
 } // End removeOutlier()
 
+void calcPointDensity::adjustMaxValue( const double _ratio ) {
+    const double new_max_value = m_max_point_density * _ratio;
+
+    // Adjust the max point density
+    for ( size_t i = 0; i < m_point_densities.size(); i++ )
+        if ( m_point_densities[i] > new_max_value ) m_point_densities[i] = new_max_value;
+
+    // Update max value
+    m_max_point_density = new_max_value;
+
+    std::cout << "\n";
+    std::cout << "Max value was adjusted:" << "\n";
+    std::cout << " Min: " << m_min_point_density << "\n";
+    std::cout << " Max: " << m_max_point_density << "\n";
+} // End adjustMaxValue()
+
 void calcPointDensity::normalize() {
     // Normalize point densities
     for ( size_t i = 0; i < m_point_densities.size(); i++ )
         m_point_densities[i] /= m_max_point_density;
 
-    std::cout << "\n";
-    std::cout << "Point densities were normalized:" << "\n";
-    m_min_point_density = *std::min_element( m_point_densities.begin(), m_point_densities.end() );
-    m_max_point_density = *std::max_element( m_point_densities.begin(), m_point_densities.end() );
-    std::cout << " Min: " << m_min_point_density << "\n";
-    std::cout << " Max: " << m_max_point_density << "\n";
+    std::cout   << "\n";
+    std::cout   << "Point density was normalized:" << "\n";
+    std::cout   << " Min: " 
+                << *std::min_element( m_point_densities.begin(), m_point_densities.end() ) 
+                << "\n";
+    std::cout   << " Max: " 
+                << *std::max_element( m_point_densities.begin(), m_point_densities.end() ) 
+                << "\n";
 } // End normalize()

@@ -34,18 +34,16 @@ inline void message() {
     std::cout << "\n";
 }
 
-inline void display_usage( char* _argv0 ) {
+inline void display_usage( const char* _argv0 ) {
     std::cout   << "  USAGE:\n  "
                 << _argv0 
-                << " [input_point_cloud] [output_point_cloud] [sigma_section_for_outlier] [colormap_type]\n\n"
+                << " [input_file] [output_file] [max_value_adjustment_ratio] [colormap_type]\n\n"
                 << "  EXAMPLE:\n  "
                 << _argv0 
-                << " input.ply output.spbr 0 -v\n\n"
-                << "   [sigma_section_for_outlier]\n"
-                << "    0: No Outlier\n"
-                << "    1: 1σ < Outlier\n"
-                << "    2: 2σ < Outlier\n"
-                << "    3: 3σ < Outlier\n\n"
+                << " input.ply output.spbr 0.8 -v\n\n"
+                << "   [max_value_adjustment_ratio]\n"
+                << "    0.8: new_max_value = max_value * 0.8\n"
+                << "    1.0: no change.\n\n"
                 << "   [colormap_type]\n"
                 << "    -v: Viridis\n"
                 << "    -p: Plasma\n"
@@ -69,6 +67,7 @@ int main( int argc, char** argv ) {
     // Import the input point cloud
     ImportPointClouds *ply = new ImportPointClouds( argv[1] );
     ply->updateMinMaxCoords();
+    const size_t number_of_points = ply->numberOfVertices();
     const kvs::Vector3f BB_min = ply->minObjectCoord();
     const kvs::Vector3f BB_max = ply->maxObjectCoord();
     const kvs::Vector3f BB_dia_vec = BB_min - BB_max;
@@ -76,7 +75,7 @@ int main( int argc, char** argv ) {
     std::cout << "Bounding Box:\n";
     std::cout << " Min: " << BB_min << "\n";
     std::cout << " Max: " << BB_max << "\n\n";
-    std::cout << "Number of points:\n " << ply->numberOfVertices() << "\n\n";
+    std::cout << "Number of points:\n " << number_of_points << "\n\n";
 
     // Set colormap type
     kvs::ColorMap cmap;
@@ -100,25 +99,26 @@ int main( int argc, char** argv ) {
     } // end for
     
     // Set search radius
+    int divide_value = 100;
     std::cout << "Diagonal length of BB:\n " << BB_dia_vec.length() << "\n\n";
-    int divide = 100;
     std::cout << "Input divide value";
     std::cout << " ( search radius = diagonal length / divide value ): ";
-    std::cin >> divide;
+    std::cin  >> divide_value;
 
     // Calculate point density
     calcPointDensity *cpd = new calcPointDensity();
-    cpd->setSearchRadius( divide, BB_dia_vec );
+    cpd->setSearchRadius( divide_value, BB_dia_vec );
     cpd->exec( ply );
     cpd->calcMinMax();
-    cpd->removeOutlier( atoi(argv[3]) );
+    // cpd->removeOutlier( atoi(argv[3]) );
+    cpd->adjustMaxValue( atof( argv[3] ) );
     cpd->normalize();
     const std::vector<double> point_densities = cpd->getPointDensities();
 
     // Apply colormap
-    cmap.setRange( cpd->getMinPointDensity(), cpd->getMaxPointDensity() );
-    kvs::ValueArray<kvs::UInt8> colors( ply->numberOfVertices() * 3 );
-    for ( size_t i = 0; i < ply->numberOfVertices(); i++ ) {
+    cmap.setRange( 0.0f, 1.0f );
+    kvs::ValueArray<kvs::UInt8> colors( number_of_points * 3 );
+    for ( size_t i = 0; i < number_of_points; i++ ) {
         const kvs::RGBColor color( cmap.at( point_densities[i] ) );
 
         colors[ 3 * i + 0 ] = color.r();
@@ -129,9 +129,11 @@ int main( int argc, char** argv ) {
 
     // Write to spbr file
     const WritingDataType type = Ascii;
-    writeSPBR(  ply,          /* kvs::PolygonObject *_ply        */  
-                outSPBRfile,  /* char*              _filename    */  
-                type          /* WritingDataType    _type        */ );       
+    writeSPBR(
+        ply,          /* kvs::PolygonObject *_ply        */  
+        outSPBRfile,  /* char*              _filename    */  
+        type          /* WritingDataType    _type        */
+    );       
 
     // Convert "kvs::PolygonObject" to "kvs::PointObject"
     kvs::PointObject* object = new kvs::PointObject( *ply );

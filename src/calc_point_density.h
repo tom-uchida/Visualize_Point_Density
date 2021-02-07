@@ -12,6 +12,7 @@ public:
     void    exec( const kvs::PolygonObject* _ply );
     void    calcMinMax( void );
     void    removeOutlier( const int _sigma_section4outlier );
+    void    adjustMaxValue( const double _ratio );
     void    normalize( void );
 
     std::vector<double> getPointDensities( void ) const { return m_point_densities; }
